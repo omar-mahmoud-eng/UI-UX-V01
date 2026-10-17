@@ -1,0 +1,211 @@
+# Enterprise Admin information architecture
+
+**Shared**: Global command center, notifications, approvals, tasks, calendar, audit, settings, integration health, profile.
+
+## Main sidebar (preserve original 23 groups + two explicitly proposed operations groups)
+
+- **01** إدارة المنتجات والكتالوج الرقمي (Enterprise PIM / DAM) — 9 submodules
+   - `01.01` إدارة المنتجات والمتغيرات وتكوينات السلع المركبة → index, record details, configuration
+   - `01.02` شجرة التصنيفات والسمات الموحدة متعددة المستويات → index, record details, configuration
+   - `01.03` مستودع الأصول الرقمية (DAM) ومعالجة الوسائط الديناميكية → index, record details, configuration
+   - `01.04` محرك حوكمة جودة البيانات ومؤشرات الاكتمال الدلالي → index, record details, configuration
+   - `01.05` إصدارات الكتالوج، بيئات التجهيز (Staging)، والجدولة الزمنية → index, record details, configuration
+   - `01.06` معالجة ملفات النماذج ثلاثية الأبعاد والواقع المعزز (3D/AR) → index, record details, configuration
+   - `01.07` الترويج البصري الآلي ورفوف العرض الافتراضية الذكية → index, record details, configuration
+   - `01.08` معايير الترقيم والترميز العالمية (GS1 / GTIN / EAN / GLN) → index, record details, configuration
+   - `01.09` محرك الربط المباشر مع شبكة مزامنة البيانات (GDSN Data Pools) → index, record details, configuration
+- **02** إدارة وتوزيع ومعالجة الطلبات الموزعة (DOMS) — 8 submodules
+   - `02.01` مركز مراقبة الطلبات الموحد متعدد القنوات (Omnichannel OMS) → index, record details, configuration
+   - `02.02` التوجيه الذكي متعدد المصادر (Distributed Order Routing) → index, record details, configuration
+   - `02.03` محرك الحجز الموزع للمخزون والتحقق اللحظي من الوفرة → index, record details, configuration
+   - `02.04` مسودات الطلبات المؤسسية وعروض الأسعار اللحظية → index, record details, configuration
+   - `02.05` اللوجستيات العكسية المتقدمة وإدارة المرتجعات (RMA) → index, record details, configuration
+   - `02.06` إدارة الطلبات المسبقة والبضائع المؤجلة (Pre-orders & Backorders) → index, record details, configuration
+   - `02.07` تجزئة الشحنات والفوترة متعددة المواقع والانقسام الآلي → index, record details, configuration
+   - `02.08` تنسيق سيناريوهات الاستيفاء الهجين (BOPIS / Curbside / BORIS) → index, record details, configuration
+- **03** المخزون وسلاسل الإمداد المتقدمة (Enterprise WMS) — 11 submodules
+   - `03.01` شبكة المستودعات الهرمية ومراكز التوزيع والمخازن المظلمة → index, record details, configuration
+   - `03.02` إدارة المواقع المكانية الدقيقة (Aisles, Bins & Dynamic Zones) → index, record details, configuration
+   - `03.03` تتبع الدفعات والأرقام التسلسلية والصلاحيات (Lot/Serial Tracking) → index, record details, configuration
+   - `03.04` استراتيجيات الالتقاط المتقدمة (Wave, Batch, Zone Picking) → index, record details, configuration
+   - `03.05` التخزين الديناميكي الموجه بحركة المبيعات (Dynamic Slotting) → index, record details, configuration
+   - `03.06` النقل المخزني الداخلي وعمليات الترانزيت الميدانية → index, record details, configuration
+   - `03.07` واجهات الأجهزة الطرفية للمسح اللاسلكي السريع (RF Scanners) → index, record details, configuration
+   - `03.08` الجرد المستمر والدوري واحتساب نقطة إعادة الطلب آلياً → index, record details, configuration
+   - `03.09` محطة التفريغ والفرز المباشر لنقل البضائع (Cross-Docking) → index, record details, configuration
+   - `03.10` إدارة الساحات وحركات الأرصفة والتحميل (Yard Management) → index, record details, configuration
+   - `03.11` خوارزميات التعبئة ثلاثية الأبعاد واحتساب الأحجام (Volumetric Cubing) → index, record details, configuration
+- **04** إدارة الاشتراكات والفوترة الدورية المؤتمتة — 5 submodules
+   - `04.01` محرك دورات الفوترة والتحصيل المتكرر المجدولة → index, record details, configuration
+   - `04.02` إدارة الاستحقاقات، التراخيص، والوصول البرمجي (Entitlements) → index, record details, configuration
+   - `04.03` محرك إدارة التحصيل الذكي والتعافي من التعثر (Dunning Engine) → index, record details, configuration
+   - `04.04` حاسبة الإيرادات المؤجلة والمكتسبة طبقاً لمعيار IFRS 15 → index, record details, configuration
+   - `04.05` بوابة الخدمة الذاتية وتعديل خطط الاشتراكات والترقيات → index, record details, configuration
+- **05** إدارة الأسطول والميل الأخير الداخلي (Private Fleet TMS) — 6 submodules
+   - `05.01` خوارزميات توجيه المركبات متعددة النقاط وتحسين المسارات (VRP) → index, record details, configuration
+   - `05.02` إدارة سعة المركبات، مطابقة الأوزان والأبعاد، وصيانة الأسطول → index, record details, configuration
+   - `05.03` إسناد المهام اللحظي وتطبيق السائقين الميداني الداخلي → index, record details, configuration
+   - `05.04` لوحة المتابعة الجغرافية والتتبع الميداني الحي عن بُعد (Telematics) → index, record details, configuration
+   - `05.05` إثبات التسليم الإلكتروني غير القابل للتلاعب (e-POD) → index, record details, configuration
+   - `05.06` تنسيق الجداول اللوجستية لاستلام المرتجعات الميدانية → index, record details, configuration
+- **06** محرك أتمتة العمليات وسير الإجراءات (BPMN / DMN Engine) — 5 submodules
+   - `06.01` مصمم الإجراءات الرسومي المعياري (BPMN 2.0 Visual Modeler) → index, record details, configuration
+   - `06.02` محرك قواعد القرارات وشروط الأعمال الديناميكية (DMN) → index, record details, configuration
+   - `06.03` سلاسل الاعتمادات الإدارية متعددة الرتب والمستويات → index, record details, configuration
+   - `06.04` مؤقتات التصعيد الآلي ومصفوفات الاستجابة للطوارئ → index, record details, configuration
+   - `06.05` سجل مراقبة اختناقات العمليات وتحليل مسارات التنفيذ (Process Mining) → index, record details, configuration
+- **07** المناقصات والمشتريات المؤسسية (B2B RFQ & E-Tenders) — 5 submodules
+   - `07.01` بوابة طلبات عروض الأسعار المؤسسية (RFQ System) → index, record details, configuration
+   - `07.02` طاولة التفاوض التجاري اللحظي وتبادل العروض البديلة → index, record details, configuration
+   - `07.03` إدارة العقود المؤسسية، الالتزامات الكمية، والاتفاقيات الإطارية → index, record details, configuration
+   - `07.04` موصل بروتوكولات المشتريات المؤسسية (cXML / OCI PunchOut) → index, record details, configuration
+   - `07.05` استيراد مسيرات الشراء وإعادة الطلب المجمع بنقرة زر (Bulk Reorder) → index, record details, configuration
+- **08** إدارة علاقات وحسابات العملاء المؤسسيين (CRM & B2B Portals) — 7 submodules
+   - `08.01` السجل التاريخي الموحد للعميل (Customer 360 Ecosystem) → index, record details, configuration
+   - `08.02` الهياكل الهرمية المعقدة للشركات الفرعية ومراكز التكلفة → index, record details, configuration
+   - `08.03` مصفوفات تفويض الشراء الداخلية وسقوف ميزانيات الفروع → index, record details, configuration
+   - `08.04` حسابات التسهيلات والحدود الائتمانية والتحصيل الآجل → index, record details, configuration
+   - `08.05` محرك التقسيم السلوكي المتقدم ومؤشرات القيمة اللحظية → index, record details, configuration
+   - `08.06` برامج الولاء متعددة الطبقات والمحافظ الرقمية للنقاط والأرصدة → index, record details, configuration
+   - `08.07` إدارة التقييمات وآراء المستهلكين الموثوقة → index, record details, configuration
+- **09** التسعير التكيفي والعروض المتقدمة وتهيئة البنود (CPQ Engine) — 6 submodules
+   - `09.01` مصفوفات الأسعار الديناميكية متعددة المستويات وقوائم العقود → index, record details, configuration
+   - `09.02` محرك الخصومات المركبة والعروض الترويجية المشروطة → index, record details, configuration
+   - `09.03` حواجز حماية هوامش الربحية التلقائية (Margin Guardrails) → index, record details, configuration
+   - `09.04` محرك تهيئة وتكوين السلع المعقدة وحساب التسعير الفوري (CPQ) → index, record details, configuration
+   - `09.05` إدارة الكوبونات الذكية، بطاقات الهدايا الرقمية، والقسائم المقيدة → index, record details, configuration
+   - `09.06` محرك مكافحة التلاعب والاستغلال الاحتيالي للعروض الترويجية → index, record details, configuration
+- **10** العمليات المالية المتقدمة والمطابقة المصرفية (Enterprise Finance) — 8 submodules
+   - `10.01` التوجيه الذكي للمدفوعات المتعددة (Smart Payment Routing) → index, record details, configuration
+   - `10.02` محرك المطابقة والتسوية البنكية الآلي (Reconciliation Engine) → index, record details, configuration
+   - `10.03` منصات الشراء الآن والدفع لاحقاً (BNPL) والتقسيط التجاري → index, record details, configuration
+   - `10.04` محرك الضرائب المتقدمة والتعريفات الجمركية الدولية → index, record details, configuration
+   - `10.05` محرك التقاص وتجزئة الحصص والمستحقات للشركاء (Split Payouts) → index, record details, configuration
+   - `10.06` إدارة ملفات النزاع البنكي والاعتراضات على الدفع (Chargebacks) → index, record details, configuration
+   - `10.07` محرك الصرف الأجنبي وإدارة العملات المتعددة وتثبيت الأسعار → index, record details, configuration
+   - `10.08` المحفظة المحاسبية ودفتر الأستاذ العام المزدوج المدمج (Ledger) → index, record details, configuration
+- **11** الامتثال التنظيمي والفوترة الإلكترونية المشفرة (Fiscal Compliance) — 7 submodules
+   - `11.01` محرك إنشاء فواتير الأعمال المعيارية بصيغة (UBL 2.1 XML / PDF/A-3) → index, record details, configuration
+   - `11.02` إدارة المفاتيح المشفرة والتوقيع الإلكتروني غير المتناظر (ECDSA) → index, record details, configuration
+   - `11.03` مسجل سلاسل التجزئة الرياضية المشفرة (Cryptographic Hash Chaining) → index, record details, configuration
+   - `11.04` مولد رموز الاستجابة السريعة الموسعة المشفرة (TLV 9-Tags QR Engine) → index, record details, configuration
+   - `11.05` موجه مساري المعالجة المزدوج: الاعتماد (Clearance) والإبلاغ (Reporting) → index, record details, configuration
+   - `11.06` مسجل الأرشفة المحصن ضد التعديل والحذف (WORM Tamper-Proof Archive) → index, record details, configuration
+   - `11.07` إدارة دورة حياة الشهادات الرقمية (CCSID / PCSID Lifecycle) → index, record details, configuration
+- **12** إدارة المحتوى وتجربة العملاء متعددة المتاجر (Enterprise CMS) — 6 submodules
+   - `12.01` محرر بناء الصفحات وتجارب التسوق المرئي بنمط العرض المباشر → index, record details, configuration
+   - `12.02` بنية تشغيل متعددة المتاجر والمستأجرين وقواعد التشغيل (Multi-Tenant) → index, record details, configuration
+   - `12.03` محرك الترجمة الشاملة، اللغات المتعددة، ومواءمة الاتجاهات (RTL/LTR) → index, record details, configuration
+   - `12.04` إدارة مسارات القوائم، الفلاتر المتشعبة، وبوابات التصفح الديناميكية → index, record details, configuration
+   - `12.05` محرك تصدير خلاصات المنتجات لقنوات التسويق (Dynamic Product Feeds) → index, record details, configuration
+   - `12.06` أدوات تحسين محركات البحث والبيانات المنظمة المتقدمة (JSON-LD SEO) → index, record details, configuration
+- **13** تشغيل وإدارة الأسواق المفتوحة والشركاء (Marketplace Core) — 6 submodules
+   - `13.01` بوابة تسجيل وتأهيل التجار والتحقق من الهوية والوثائق (KYB) → index, record details, configuration
+   - `13.02` محرك حوكمة إدراج السلع، ومطابقة الكتالوج الموحد، وضبط الجودة → index, record details, configuration
+   - `13.03` خوارزمية اختيار الفائز بزر الشراء المباشر (Buy Box Algorithm) → index, record details, configuration
+   - `13.04` حسابات الضمان المالي ومحافظ التجار المدمجة (Escrow Accounts) → index, record details, configuration
+   - `13.05` شاشة مراقبة التزام التجار باتفاقيات مستوى الخدمة (Seller SLA) → index, record details, configuration
+   - `13.06` محرك احتساب العمولات المركبة والفوترة الدورية لمستحقات البائعين → index, record details, configuration
+- **14** خدمة العملاء والاتصالات ومساندة المبيعات (Omnichannel Contact Center) — 7 submodules
+   - `14.01` وحدة تقمص جلسات المستخدم والمبيعات التفاعلية المساعدة (ASM) → index, record details, configuration
+   - `14.02` صندوق الرسائل الموحد متعدد القنوات (Unified Messaging Inbox) → index, record details, configuration
+   - `14.03` نظام إدارة التذاكر المدمج مع سجل الطلبات والشحنات اللحظي → index, record details, configuration
+   - `14.04` محرك اتفاقيات مستوى الخدمة (SLA) والتصعيد الذاتي للتذاكر → index, record details, configuration
+   - `14.05` إدارة صلاحيات التعويض الفوري، الإرجاع، وإصدار أرصدة المتجر → index, record details, configuration
+   - `14.06` محرك الاتصال الحاسوبي الهاتفي المدمج والمقسم السحابي (CTI / Cloud PBX) → index, record details, configuration
+   - `14.07` نواة الاتصال الصوتي عبر المتصفح والظهور الفوري لبيانات المتصل (WebRTC Screen-Pop) → index, record details, configuration
+- **15** منظومة الذكاء الاصطناعي والتجارة الوكيلة (Agentic AI Commerce) — 6 submodules
+   - `15.01` خوادم تمكين وكلاء الشراء الذاتيين (Agentic Model Context Protocol - MCP) → index, record details, configuration
+   - `15.02` محرك البحث الدلالي والمتجهي وفهم المقاصد (Vector Search / RAG) → index, record details, configuration
+   - `15.03` استوديو توليد وتوطين وصياغة الأوصاف والبيانات التلقائي بالنماذج اللغوية → index, record details, configuration
+   - `15.04` محرك التنبؤ بحركة الطلب واختناقات سلاسل الإمداد ومعدلات التراجع → index, record details, configuration
+   - `15.05` خوارزميات التسعير التنافسي الذاتي ومراقبة قنوات السوق الخارجية → index, record details, configuration
+   - `15.06` محرك الذكاء الاصطناعي لرصد الأنماط الاحتيالية والسلوكية المشبوهة → index, record details, configuration
+- **16** الأمان المؤسسي وإدارة الهوية والامتثال الصارم (IAM & Zero-Trust) — 6 submodules
+   - `16.01` محرك إدارة الصلاحيات المتقدم القائم على الدور والسمات (RBAC & ABAC) → index, record details, configuration
+   - `16.02` سجل التدقيق والرقابة الجنائية غير القابل للتعديل أو المسح (WORM Logs) → index, record details, configuration
+   - `16.03` خادم الهوية الرقمية والدخول الموحد والمصادقة متعددة العوامل (SSO / MFA) → index, record details, configuration
+   - `16.04` تشفير البيانات المتنقلة والساكنة وحجب الحقول الحساسة (Field-Level Encryption) → index, record details, configuration
+   - `16.05` محرك الامتثال للخصوصية وحوكمة البيانات الشخصية (PDPL / GDPR) → index, record details, configuration
+   - `16.06` جدار حماية التطبيقات، كبح الهجمات، وتحديد معدل الاستدعاءات (Rate Limiting) → index, record details, configuration
+- **17** ذكاء الأعمال، مستودع البيانات، والتحليلات المتقدمة (Embedded BI) — 6 submodules
+   - `17.01` لوحات المؤشرات التشغيلية والمالية التفاعلية اللحظية (Operational Dashboards) → index, record details, configuration
+   - `17.02` محرك تتبع الأحداث والتفاعلات السلوكية الذاتي دون أطراف وسيطة → index, record details, configuration
+   - `17.03` تقارير تفصيلية لصافي هوامش الربحية والتكاليف المتغيرة للبضائع (COGS) → index, record details, configuration
+   - `17.04` تحليلات كفاءة دورة سلاسل الإمداد ومعدلات دوران البضاعة المخزنة → index, record details, configuration
+   - `17.05` استكشاف مسارات التحول وتحليلات ارتداد السلال الشرائية واستردادها → index, record details, configuration
+   - `17.06` نماذج التنبؤ بالقيمة الدائمة للعملاء (CLV) ومعدلات مخاطر التراجع (Churn) → index, record details, configuration
+- **18** إدارة النظام والاعتمادية المعمارية والمزامنة الفائقة (System Core) — 6 submodules
+   - `18.01` وسيط صندوق الصادر الموثوق لضمان نقل الأحداث (Transactional Outbox) → index, record details, configuration
+   - `18.02` محرك التحقق من فرادة وتطابق العمليات وتفادي التكرار (Idempotency Engine) → index, record details, configuration
+   - `18.03` طوابير الرسائل الموزعة وسياسات إعادة المحاولة وعزل الفشل (DLQ) → index, record details, configuration
+   - `18.04` إدارة طبقات الذاكرة المؤقتة التوزيعية وتفريغ الفهارس اللحظية → index, record details, configuration
+   - `18.05` البوابة المركزية لإدارة واجهات التطبيقات البرمجية وخطافات الويب (APIs & Webhooks) → index, record details, configuration
+   - `18.06` محرك المعالجة الدفعية المجدولة للبيانات والملفات الضخمة المليونية → index, record details, configuration
+- **19** نقاط البيع الموحدة والتجارة عبر المتاجر الفعلية (Unified POS & In-Store)*(قسم مستحدث)* — 6 submodules
+   - `19.01` محطة البيع المركزية السحابية للأجهزة اللوحية والمحمولة (Cloud POS) → index, record details, configuration
+   - `19.02` معمارية العمل دون اتصال بالإنترنت والمزامنة اللحظية (Offline-First via CRDTs) → index, record details, configuration
+   - `19.03` طبقة تعريف وربط العتاد المكتبي والأجهزة الطرفية (Hardware Bus Layer) → index, record details, configuration
+   - `19.04` محرك إتمام المبيعات اللانهائية من الرف الافتراضي (Endless Aisle)2 → index, record details, configuration
+   - `19.05` صندوق الكاشير اليومي، موازنة العهدة النقدية، وإدارة فتح وإغلاق الفترات → index, record details, configuration
+   - `19.06` محرك الفحص والإرجاع التبادلي بين الفروع والمتجر الإلكتروني (In-Store BORIS)3 → index, record details, configuration
+- **20** إدارة علاقات الموردين والمشتريات الصاعدة (SRM & Procure-to-Pay)*(قسم مستحدث)* — 6 submodules
+   - `20.01` بوابة التسجيل والتقييم والتأهيل الأولي للموردين (Vendor Onboarding)8 → index, record details, configuration
+   - `20.02` محرك إصدار طلبات وأوامر الشراء الداخلية وسلاسل الاعتماد (PO Engine)7 → index, record details, configuration
+   - `20.03` محرك المطابقة الثلاثية الآلي للفواتير (Automated Three-Way Matching) → index, record details, configuration
+   - `20.04` سجل أداء الموردين ومؤشرات التسليم والجودة (Supplier Scorecards & OTIF)8 → index, record details, configuration
+   - `20.05` إدارة وثائق الشحن المسبقة وأذونات التوريد المجدولة (ASN Management)8 → index, record details, configuration
+   - `20.06` إدارة العقود، خطط الدفع المجدولة، وحسابات التقاص التوريدية → index, record details, configuration
+- **21** منصة بيانات العملاء وأتمتة التسويق والاتصالات (CDP & Marketing Automation)*(قسم مستحدث)* — 7 submodules
+   - `21.01` محرك توحيد الهوية الرقمية للعميل (Identity Resolution Engine) → index, record details, configuration
+   - `21.02` مصمم رحلات وحملات التواصل المؤتمتة متعددة القنوات (Journey Builder) → index, record details, configuration
+   - `21.03` بوابة الإرسال المباشر للرسائل عبر واجهات واتساب للأعمال (WhatsApp Cloud API) → index, record details, configuration
+   - `21.04` محرك إرسال الرسائل النصية القصيرة الموثوقة (Multi-Provider SMS Engine) → index, record details, configuration
+   - `21.05` محرك إرسال حملات البريد الإلكتروني ونشرات العروض الترويجية الموجهة → index, record details, configuration
+   - `21.06` نظام إشعارات الويب وتطبيقات الجوال الذاتية (Web & App Push Engine) → index, record details, configuration
+   - `21.07` محرك استرداد السلال المتروكة وتنبيهات انخفاض الأسعار ووفرة المخزون → index, record details, configuration
+- **22** محرك إدارة الشحن والناقلين التجاريين الخارجيين (Multi-Carrier Shipping & Rate Shopping)*(قسم مستحدث)* — 5 submodules
+   - `22.01` محرك المقارنة اللحظية لأسعار الشحن المتعددة (Algorithmic Rate Shopping) → index, record details, configuration
+   - `22.02` محرك إصدار وتوليد بوالص وملصقات الشحن الحرارية المعتمدة (ZPL Labels)11 → index, record details, configuration
+   - `22.03` موحد تتبع الشحنات وأحداث التسليم وتوحيد الحالات اللوجستية (Tracking Normalizer)11 → index, record details, configuration
+   - `22.04` محرك التدقيق المحاسبي لفواتير شركات الشحن (Freight Audit & Reconciliation)12 → index, record details, configuration
+   - `22.05` إدارة اتفاقيات مستوى خدمة التوصيل وتوزيع الحصص التشغيلية (Carrier Allocation)10 → index, record details, configuration
+- **23** إدارة التسويق بالعمولة والشركاء والمؤثرين (Affiliate, Influencer & Referral Core)*(قسم مستحدث)* — 6 submodules
+   - `23.01` بوابة انضمام وإدارة الشركاء والمؤثرين ومسوقي العمولة المستقلين → index, record details, configuration
+   - `23.02` مولد الروابط التتبعية المخصصة وأكواد الخصم الحصرية للمؤثرين → index, record details, configuration
+   - `23.03` محرك قواعد العمولات متعددة المستويات والشرائح المتصاعدة (Multi-Tier) → index, record details, configuration
+   - `23.04` محرك الإسناد التسويقي المتقدم وتحليل قنوات المساهمة في البيع (Attribution) → index, record details, configuration
+   - `23.05` محرك رصد ومنع الاحتيال في عمليات الترويج وحركة الزيارات الوهمية → index, record details, configuration
+   - `23.06` المحفظة المالية للمسوق وجدولة مسيرات الصرف وتسوية الضرائب → index, record details, configuration
+- **24** استوديو التصنيع والحرف الخشبية (Wood Workshop & Production) — 7 submodules
+   - `24.01` أوامر التصنيع للنقش والحفر بالليزر → index, record details, configuration
+   - `24.02` اعتماد معاينات أسماء العملاء والخطوط → index, record details, configuration
+   - `24.03` إدارة المواد الخام والألواح والخامات → index, record details, configuration
+   - `24.04` تخطيط الطاقة الاستيعابية للمشغل والحرفيين → index, record details, configuration
+   - `24.05` ملفات التصميم وقوالب الحفر CNC/Laser → index, record details, configuration
+   - `24.06` الفحص النهائي وتصوير القطعة وبدائل إعادة العمل → index, record details, configuration
+   - `24.07` حساب تكلفة العمل والهدر والتجهيز → index, record details, configuration
+- **25** تشغيل مشغل الزهور وتجهيز الهدايا (Florist & Gift Assembly) — 8 submodules
+   - `25.01` استلام دفعات الورد والفرز المبرد → index, record details, configuration
+   - `25.02` تصميم وصفات الباقات واحتساب سيقان الزهور → index, record details, configuration
+   - `25.03` جدولة تجهيز الباقات حسب فترة التوصيل → index, record details, configuration
+   - `25.04` التجميع النهائي لبوكسات الورد والخشب → index, record details, configuration
+   - `25.05` مراقبة صلاحية الورد والبدائل بإذن العميل → index, record details, configuration
+   - `25.06` فحص جودة التغليف وتصوير التسليم → index, record details, configuration
+   - `25.07` إدارة المواد الاستهلاكية والأشرطة والكروت → index, record details, configuration
+   - `25.08` تجهيز الطلبات الموسمية ذات الذروة → index, record details, configuration
+
+## Roles & permission design
+- **Owner / CEO** KPI aggregate, approvals, anonymized staff; no secrets by default.
+- **Operations Manager** orders, dispatch, workshop slots, supplier and stock operations.
+- **Workshop Lead** engraving queue, customer proof, CNC file validation, QC; no bank data.
+- **Florist Lead** recipe, floral batches FEFO, substitutions with approval, production readiness.
+- **Warehouse** scanners, pick/pack, transfers, receiving, lots; no financial ledger edits.
+- **Finance** refunds/ledger/tax/invoice review with audit approval; no arbitrary fulfillment changes.
+- **CX** buyer and recipient contact for order-service need, identity verification, no card secrets.
+- **B2B Sales** RFQs/contract quotes/account hierarchy scoped to teams.
+- **Marketing** promotions, segmentation and consent flags, never unrestricted recipient PII.
+- **Courier** assigned delivery only, minimal recipient fields, proof of delivery capture.
+- **Security Admin** role policy, SSO and audit, break-glass oversight.
+
+Always implement both route-level and action-level permission states. A nav item hidden from a user is not authorization enforcement.

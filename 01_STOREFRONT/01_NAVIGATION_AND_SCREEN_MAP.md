@@ -1,0 +1,126 @@
+# Storefront — navigation and complete screen index
+
+**Primary navigation**: الرئيسية · الهدايا الخشبية · الورد والباقات · بوكسات الهدايا · حسب المناسبة · خصص هديتك · هدايا الشركات · المساعدة. Account menu: الطلبات · دفتر المستلمين · التصميمات المحفوظة · العناوين · تذكيرات المناسبات.
+
+- **WEB-001** | الرئيسية | `/shop` | `SCREEN_PROMPTS/home.md`
+- **WEB-002** | قائمة الأقسام الرئيسية | `/shop` | `SCREEN_PROMPTS/mega-menu.md`
+- **WEB-003** | الرئيسية للجوال | `/shop` | `SCREEN_PROMPTS/mobile-home.md`
+- **WEB-004** | جميع المنتجات | `/products` | `SCREEN_PROMPTS/all-products.md`
+- **WEB-005** | الهدايا الخشبية | `/products/wood` | `SCREEN_PROMPTS/wood-collection.md`
+- **WEB-006** | الورد والباقات | `/products/flowers` | `SCREEN_PROMPTS/flowers-collection.md`
+- **WEB-007** | هدايا الورد والخشب | `/products/combinations` | `SCREEN_PROMPTS/combo-collection.md`
+- **WEB-008** | الهدايا حسب المناسبة | `/gifts/occasions` | `SCREEN_PROMPTS/occasion-landing.md`
+- **WEB-009** | هدايا التخرج | `/gifts/occasions/graduation` | `SCREEN_PROMPTS/occasion-detail.md`
+- **WEB-010** | حسب الشخص | `/gifts/for` | `SCREEN_PROMPTS/recipient-landing.md`
+- **WEB-011** | هدايا للأم | `/gifts/for/mother` | `SCREEN_PROMPTS/recipient-detail.md`
+- **WEB-012** | حسب الميزانية | `/gifts/budget` | `SCREEN_PROMPTS/budget-gifts.md`
+- **WEB-013** | وصل حديثًا | `/collections/new` | `SCREEN_PROMPTS/new-arrivals.md`
+- **WEB-014** | الأكثر طلبًا | `/collections/bestsellers` | `SCREEN_PROMPTS/bestsellers.md`
+- **WEB-015** | هدايا الموسم | `/campaigns/seasonal` | `SCREEN_PROMPTS/seasonal-campaign.md`
+- **WEB-016** | العروض | `/collections/offers` | `SCREEN_PROMPTS/sale.md`
+- **WEB-017** | دليل اختيار الهدية | `/gift-guide` | `SCREEN_PROMPTS/gift-guide.md`
+- **WEB-018** | نتائج دليل الهدية | `/gift-guide/recommendations` | `SCREEN_PROMPTS/gift-guide-results.md`
+- **WEB-019** | البحث الفوري | `/search` | `SCREEN_PROMPTS/search-overlay.md`
+- **WEB-020** | نتائج البحث | `/search?q=ورد` | `SCREEN_PROMPTS/search-results.md`
+- **WEB-021** | لا توجد نتائج | `/search?q=unknown` | `SCREEN_PROMPTS/search-empty.md`
+- **WEB-022** | مقارنة المنتجات | `/compare` | `SCREEN_PROMPTS/comparison.md`
+- **WEB-023** | معرض الإلهام | `/inspiration` | `SCREEN_PROMPTS/lookbook.md`
+- **WEB-024** | المجلة | `/journal` | `SCREEN_PROMPTS/blog-index.md`
+- **WEB-025** | دليل العناية بالورد | `/journal/flower-care` | `SCREEN_PROMPTS/blog-article.md`
+- **WEB-026** | تفاصيل الهدية الخشبية | `/products/engraved-walnut-box` | `SCREEN_PROMPTS/product-wood.md`
+- **WEB-027** | تفاصيل باقة الورد | `/products/rose-bouquet` | `SCREEN_PROMPTS/product-flower.md`
+- **WEB-028** | تفاصيل بوكس هدية متكامل | `/products/wood-flower-box` | `SCREEN_PROMPTS/product-combo.md`
+- **WEB-029** | بطاقة هدية رقمية | `/products/digital-gift` | `SCREEN_PROMPTS/product-digital.md`
+- **WEB-030** | اختيار المقاس والخامة | `/products/engraved-walnut-box/variants` | `SCREEN_PROMPTS/variant-drawer.md`
+- **WEB-031** | معرض صور المنتج | `/products/engraved-walnut-box/gallery` | `SCREEN_PROMPTS/product-gallery.md`
+- **WEB-032** | ابدأ تخصيص الهدية | `/create` | `SCREEN_PROMPTS/personalization-entry.md`
+- **WEB-033** | تخصيص الخشب: اختيار القطعة | `/create/wood/material` | `SCREEN_PROMPTS/wood-builder-choose.md`
+- **WEB-034** | تخصيص الخشب: الاسم والخط | `/create/wood/engraving` | `SCREEN_PROMPTS/wood-builder-text.md`
+- **WEB-035** | تخصيص الخشب: رفع التصميم | `/create/wood/artwork` | `SCREEN_PROMPTS/wood-builder-art.md`
+- **WEB-036** | تخصيص الخشب: معاينة واعتماد | `/create/wood/proof` | `SCREEN_PROMPTS/wood-builder-proof.md`
+- **WEB-037** | حفظ تصميم الخشب | `/create/wood/review` | `SCREEN_PROMPTS/wood-builder-save.md`
+- **WEB-038** | مصمم الباقة: حجم وشكل | `/create/bouquet/base` | `SCREEN_PROMPTS/bouquet-builder-base.md`
+- **WEB-039** | مصمم الباقة: أنواع وألوان | `/create/bouquet/flowers` | `SCREEN_PROMPTS/bouquet-builder-flowers.md`
+- **WEB-040** | مصمم الباقة: التغليف | `/create/bouquet/wrapping` | `SCREEN_PROMPTS/bouquet-builder-wrap.md`
+- **WEB-041** | مصمم الباقة: المعاينة | `/create/bouquet/review` | `SCREEN_PROMPTS/bouquet-builder-preview.md`
+- **WEB-042** | ركّب بوكس الهدية | `/create/box` | `SCREEN_PROMPTS/box-builder-start.md`
+- **WEB-043** | بوكس الهدية: المنتجات الإضافية | `/create/box/items` | `SCREEN_PROMPTS/box-builder-items.md`
+- **WEB-044** | بوكس الهدية: ترتيب المكونات | `/create/box/layout` | `SCREEN_PROMPTS/box-builder-layout.md`
+- **WEB-045** | بوكس الهدية: المراجعة | `/create/box/review` | `SCREEN_PROMPTS/box-builder-review.md`
+- **WEB-046** | بطاقة الإهداء | `/gift/card` | `SCREEN_PROMPTS/gift-message.md`
+- **WEB-047** | تنسيق وتغليف الهدية | `/gift/wrapping` | `SCREEN_PROMPTS/gift-wrapping.md`
+- **WEB-048** | معاينة الهدية كاملة | `/gift/preview` | `SCREEN_PROMPTS/gift-preview.md`
+- **WEB-049** | رفع صورة أو شعار | `/gift/upload` | `SCREEN_PROMPTS/photo-upload.md`
+- **WEB-050** | تخصيص عدة هدايا | `/create/bulk` | `SCREEN_PROMPTS/bulk-personalization.md`
+- **WEB-051** | المنتج غير متاح | `/products/sold-out` | `SCREEN_PROMPTS/product-unavailable.md`
+- **WEB-052** | التقييمات والصور | `/products/rose-bouquet/reviews` | `SCREEN_PROMPTS/product-review-section.md`
+- **WEB-053** | سلة جانبية | `/cart/drawer` | `SCREEN_PROMPTS/mini-cart.md`
+- **WEB-054** | سلة التسوق | `/cart` | `SCREEN_PROMPTS/cart.md`
+- **WEB-055** | السلة فارغة | `/cart/empty` | `SCREEN_PROMPTS/cart-empty.md`
+- **WEB-056** | هذه هدية | `/cart/gifting` | `SCREEN_PROMPTS/cart-gift-mode.md`
+- **WEB-057** | شحن لعدة مستلمين | `/cart/recipients` | `SCREEN_PROMPTS/split-recipients.md`
+- **WEB-058** | إضافات الهدية | `/cart/addons` | `SCREEN_PROMPTS/gift-bundle-cross-sell.md`
+- **WEB-059** | بدء إتمام الطلب | `/checkout` | `SCREEN_PROMPTS/checkout-start.md`
+- **WEB-060** | بيانات المستلم | `/checkout/recipient` | `SCREEN_PROMPTS/checkout-recipient.md`
+- **WEB-061** | عنوان التوصيل | `/checkout/address` | `SCREEN_PROMPTS/checkout-address.md`
+- **WEB-062** | التأكد من تغطية التوصيل | `/checkout/serviceability` | `SCREEN_PROMPTS/delivery-serviceability.md`
+- **WEB-063** | تاريخ وصول الهدية | `/checkout/delivery/date` | `SCREEN_PROMPTS/delivery-date.md`
+- **WEB-064** | الفترة الزمنية للتوصيل | `/checkout/delivery/slot` | `SCREEN_PROMPTS/delivery-window.md`
+- **WEB-065** | استلام من الفرع | `/checkout/pickup` | `SCREEN_PROMPTS/pickup.md`
+- **WEB-066** | طلب استثناء التوصيل | `/checkout/delivery/instructions` | `SCREEN_PROMPTS/delivery-exception.md`
+- **WEB-067** | طريقة التوصيل | `/checkout/shipping` | `SCREEN_PROMPTS/checkout-shipping.md`
+- **WEB-068** | الدفع | `/checkout/payment` | `SCREEN_PROMPTS/checkout-payment.md`
+- **WEB-069** | كود الخصم | `/checkout/voucher` | `SCREEN_PROMPTS/checkout-discount.md`
+- **WEB-070** | تأكيد الطلب | `/checkout/review` | `SCREEN_PROMPTS/checkout-review.md`
+- **WEB-071** | توثيق الدفع | `/checkout/authentication` | `SCREEN_PROMPTS/checkout-3ds.md`
+- **WEB-072** | تم استلام الطلب | `/checkout/success` | `SCREEN_PROMPTS/checkout-success.md`
+- **WEB-073** | فشل الدفع | `/checkout/payment-failed` | `SCREEN_PROMPTS/checkout-payment-failed.md`
+- **WEB-074** | العنوان غير مدعوم | `/checkout/address-error` | `SCREEN_PROMPTS/checkout-address-error.md`
+- **WEB-075** | تغير المخزون قبل الدفع | `/checkout/availability-change` | `SCREEN_PROMPTS/checkout-out-of-stock.md`
+- **WEB-076** | تسجيل الدخول | `/account/login` | `SCREEN_PROMPTS/sign-in.md`
+- **WEB-077** | إنشاء حساب | `/account/register` | `SCREEN_PROMPTS/register.md`
+- **WEB-078** | تأكيد رقم الجوال | `/account/verify` | `SCREEN_PROMPTS/otp.md`
+- **WEB-079** | استعادة الدخول | `/account/recover` | `SCREEN_PROMPTS/forgot-password.md`
+- **WEB-080** | حسابي | `/account` | `SCREEN_PROMPTS/account-overview.md`
+- **WEB-081** | طلباتي | `/account/orders` | `SCREEN_PROMPTS/order-history.md`
+- **WEB-082** | تفاصيل الطلب | `/account/orders/WD-2026-1042` | `SCREEN_PROMPTS/order-detail.md`
+- **WEB-083** | تتبع الطلب | `/track/WD-2026-1042` | `SCREEN_PROMPTS/order-tracking.md`
+- **WEB-084** | تغيير موعد التوصيل | `/account/orders/WD-2026-1042/reschedule` | `SCREEN_PROMPTS/delivery-change.md`
+- **WEB-085** | طلب الإلغاء | `/account/orders/WD-2026-1042/cancel` | `SCREEN_PROMPTS/order-cancellation.md`
+- **WEB-086** | طلب استرجاع | `/account/orders/WD-2026-1042/return` | `SCREEN_PROMPTS/return-request.md`
+- **WEB-087** | العناوين | `/account/addresses` | `SCREEN_PROMPTS/saved-addresses.md`
+- **WEB-088** | دفتر المستلمين | `/account/recipients` | `SCREEN_PROMPTS/recipient-book.md`
+- **WEB-089** | تذكيرات المناسبات | `/account/occasions` | `SCREEN_PROMPTS/occasions-reminders.md`
+- **WEB-090** | قائمة المفضلة | `/account/wishlist` | `SCREEN_PROMPTS/wishlists.md`
+- **WEB-091** | تصميماتي | `/account/designs` | `SCREEN_PROMPTS/saved-designs.md`
+- **WEB-092** | بطاقات الهدايا | `/account/giftcards` | `SCREEN_PROMPTS/wallet-giftcards.md`
+- **WEB-093** | كتابة تقييم | `/account/reviews/write` | `SCREEN_PROMPTS/reviews-write.md`
+- **WEB-094** | نقاط الولاء | `/account/loyalty` | `SCREEN_PROMPTS/loyalty.md`
+- **WEB-095** | إشعاراتي | `/account/notifications` | `SCREEN_PROMPTS/notifications.md`
+- **WEB-096** | الخصوصية وبياناتي | `/account/privacy` | `SCREEN_PROMPTS/privacy.md`
+- **WEB-097** | طلبات المساعدة | `/account/support` | `SCREEN_PROMPTS/support-tickets.md`
+- **WEB-098** | هدايا الشركات | `/business` | `SCREEN_PROMPTS/corporate-home.md`
+- **WEB-099** | كتالوج الشركات | `/business/catalog` | `SCREEN_PROMPTS/corporate-catalog.md`
+- **WEB-100** | طلب عرض سعر | `/business/request-quote` | `SCREEN_PROMPTS/corporate-rfq.md`
+- **WEB-101** | استلام طلب التسعير | `/business/request-quote/success` | `SCREEN_PROMPTS/corporate-rfq-success.md`
+- **WEB-102** | بوابة حسابات الشركات | `/business/login` | `SCREEN_PROMPTS/corporate-login.md`
+- **WEB-103** | لوحة عميل الشركات | `/business/portal` | `SCREEN_PROMPTS/corporate-portal.md`
+- **WEB-104** | اعتماد طلب الشركات | `/business/portal/approval` | `SCREEN_PROMPTS/corporate-order-approval.md`
+- **WEB-105** | رفع أسماء المهدى إليهم | `/business/portal/bulk` | `SCREEN_PROMPTS/corporate-bulk-upload.md`
+- **WEB-106** | قصتنا والحرفيون | `/about` | `SCREEN_PROMPTS/workshop-story.md`
+- **WEB-107** | خطوات صناعة هديتك | `/about/process` | `SCREEN_PROMPTS/craft-process.md`
+- **WEB-108** | الشحن والتوصيل | `/policies/shipping` | `SCREEN_PROMPTS/shipping-policy.md`
+- **WEB-109** | الاستبدال والاسترجاع | `/policies/returns` | `SCREEN_PROMPTS/returns-policy.md`
+- **WEB-110** | العناية بالورد | `/help/flower-care` | `SCREEN_PROMPTS/care-flowers.md`
+- **WEB-111** | العناية بالخشب | `/help/wood-care` | `SCREEN_PROMPTS/care-wood.md`
+- **WEB-112** | الأسئلة الشائعة | `/help/faq` | `SCREEN_PROMPTS/faq.md`
+- **WEB-113** | تواصل معنا | `/contact` | `SCREEN_PROMPTS/contact.md`
+- **WEB-114** | نافذة المحادثة | `/help/chat` | `SCREEN_PROMPTS/chat-widget.md`
+- **WEB-115** | تتبع طلب كضيف | `/track` | `SCREEN_PROMPTS/track-public.md`
+- **WEB-116** | صفحة مستلم الهدية | `/gift/receive` | `SCREEN_PROMPTS/gift-receiver.md`
+- **WEB-117** | استبدال بطاقة هدية | `/giftcards/redeem` | `SCREEN_PROMPTS/gift-card-redemption.md`
+- **WEB-118** | إمكانية الوصول | `/accessibility` | `SCREEN_PROMPTS/accessibility.md`
+- **WEB-119** | الشروط والأحكام | `/policies/terms` | `SCREEN_PROMPTS/legal-terms.md`
+- **WEB-120** | الصفحة غير موجودة | `/404` | `SCREEN_PROMPTS/error-404.md`
+- **WEB-121** | الخدمة مؤقتًا غير متاحة | `/error` | `SCREEN_PROMPTS/system-error.md`
+- **WEB-122** | تحديثات المتجر | `/maintenance` | `SCREEN_PROMPTS/maintenance.md`
