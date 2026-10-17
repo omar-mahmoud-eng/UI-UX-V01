@@ -1,0 +1,3 @@
+# Start the Stitch design agent
+
+Read `AGENTS.md` and `02_ADMIN_PANEL/00_START_HERE.md` after the complete archive is extracted into this repository. Verify all 638 screen prompt files and all 25 admin module prompts. Read `DESIGN.md`, `SCREENS_INDEX.md`, and `03_STITCH_BATCHES.md`; create a persistent ledger; generate and QA one Google Stitch admin screen at a time; store the real Stitch link and status for each screen; resume from the last verified incomplete screen. Never mark a screen complete without a saved actual design. Stop and report missing Drive/Stitch/GitHub access rather than inventing results.
