@@ -64,7 +64,7 @@ For **Analytics** and **CRM**:
 
 ### 2. Preventing Duplication of Medusa Core Features
 * Medusa v2 native engines (Product, Pricing, Promotion, Cart, Order, Inventory, Payment, Fulfillment) are the sole authority for commerce operations.
-* **Inventory Authority**: Stock levels and reservations are owned exclusively by Medusa's native `InventoryModule` (`ReservationItem`). No secondary shadow inventory in Redis is permitted.
+* **Inventory Authority**: Stock levels and reservations are owned exclusively by Medusa's native `InventoryModule` (`ReservationItem`). Reservations occur automatically inside `completeCartWorkflow` upon order placement. No secondary shadow inventory in Redis or temporary cart TTL holds exist.
 * Custom modules augment core entities via **Module Links** (`defineLink`) and inject business logic via **Workflow Steps**. No parallel pricing, cart, or order tables will ever be created.
 
 ### 3. PostgreSQL Transaction Integrity & Connection Pooling
@@ -80,7 +80,7 @@ For **Analytics** and **CRM**:
 
 ### 5. Single-Store Security & Authorization Boundaries
 * **Architecture Clarification**: CommerceOS is a single-store self-hosted installation per merchant. There is no multi-tenant database partitioning or `tenant_id` on Medusa core tables.
-* **Backoffice Access Control**: Enforced using Medusa's native Role-Based Access Control (Admin, Member roles).
+* **Backoffice Access Control & Auth Gap**: Authenticated via Medusa Admin Authentication (`@medusajs/auth`). Fine-grained Staff RBAC (role-based endpoint permissions) requires custom authorization middleware/extensions; protected endpoints enforce fail-closed authorization even during Redis outages.
 * **Storefront Access Control**: Server-side object-level authorization (BOLA/IDOR prevention) verifies that customer queries match the authenticated session (`customer_id` check on all order/cart queries). Guest checkouts are secured via cryptographically signed tokens (HMAC).
 
 ### 6. Horizontal Scalability & Performance Objectives

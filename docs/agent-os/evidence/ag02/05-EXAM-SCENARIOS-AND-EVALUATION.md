@@ -135,7 +135,7 @@ Below is the rigorous evaluation of the 5 critical findings identified during au
    * **Operational Defect**: If a customer abandoned checkout or payment was declined, stock in Redis was permanently lost unless complex, fragile TTL reclamation logic was maintained.
 2. **Proposed Architectural Design**:
    * **Single Source of Truth**: Medusa v2 native `InventoryModule` is the **sole business authority** for stock.
-   * **Native Reservation Lifecycle**: Use Medusa's `createReservationsWorkflow` and `completeCartWorkflow` which create `ReservationItem` records in PostgreSQL. Reservations lock stock during checkout and are committed upon order creation.
+   * **Native Reservation Lifecycle**: Stock reservations (`ReservationItem`) are created automatically inside Medusa's native `completeCartWorkflow` upon order placement. Uncompleted carts hold no reservations and have no TTL holds.
    * **Separation of Rate Limiting vs Stock**: If flash sales require traffic throttling, implement a **generic HTTP Admission Controller** in Redis (rate limiting incoming requests per IP/user), completely decoupled from inventory logic.
 3. **Limitations & Risks**:
    * High database lock contention can still occur on PostgreSQL if thousands of concurrent requests attempt to reserve the same inventory item simultaneously.
@@ -235,13 +235,14 @@ In accordance with the review mandate, the following 5 novel scenarios explore c
 
 ### Scenario 11: Inventory Reservation Conflict During Concurrent Cart Checkouts
 
-* **Problem**: Two shoppers add the final available unit of an item to their carts. Shopper A initiates checkout and reaches the payment step. Shopper B clicks "Place Order" 2 seconds later. How does Medusa v2 prevent overselling without deadlocks?
+* **Problem**: Two shoppers add the final available unit of an item to their carts. Shoppers A and B attempt to complete checkout around the same time. How does Medusa v2 prevent overselling without deadlocks or unverified cart TTL reservations?
 * **Solution**:
-  1. In Medusa v2, stock is reserved using `ReservationItem` records linked to the cart session.
-  2. When Shopper A enters the checkout workflow, Medusa creates a pending inventory reservation. Available stock (`stocked_quantity - reserved_quantity`) drops to 0.
-  3. When Shopper B attempts cart completion, Medusa's inventory validation step queries available stock, determines that `available_quantity < requested_quantity`, and fails fast with an `INSUFFICIENT_INVENTORY` error.
-  4. If Shopper A abandons their cart, the reservation expires or is canceled, restoring available stock for Shopper B.
-* **Limitations**: Requires defining a sensible reservation expiration TTL to prevent shoppers from locking up inventory indefinitely.
+  1. In standard Medusa v2, active shopping carts do NOT hold reserved stock; reservations are created automatically inside `completeCartWorkflow` when the cart is completed and the order is placed.
+  2. Both Shoppers A and B can have the item in their carts simultaneously without contention.
+  3. Contention occurs at the database level when `completeCartWorkflow` executes. Shopper A's checkout completes first, atomically creating the `ReservationItem` and confirming the order. Available stock (`stocked_quantity - reserved_quantity`) drops to 0.
+  4. When Shopper B's `completeCartWorkflow` executes, the inventory reservation step detects insufficient available stock (`available_quantity < requested_quantity`) and fails cleanly with an inventory allocation error.
+  5. Medusa's workflow compensation runs for Shopper B: any authorized payment hold is immediately canceled (or refunded if captured), and the shopper is notified that the item sold out before checkout completion.
+* **Limitations & Invariants**: No parallel inventory hold or unverified cart TTL is assumed. The stock check is strictly transactional at cart completion.
 
 ---
 

@@ -262,14 +262,14 @@
 * Parameterize all SQL queries. Never concatenate raw strings into database queries.
 
 ### 5. Official Versioned Citations
-* OWASP ASVS: [Application Security Verification Standard v4.0.3 Stable / v5.0 Draft](https://owasp.org/www-project-application-security-verification-standard/) (Accessed: 2026-10-18).
+* OWASP ASVS: [Application Security Verification Standard v5.0.0 Stable (May 2025)](https://owasp.org/www-project-application-security-verification-standard/) (Accessed: 2026-10-18).
 * OWASP API Security: [API Security Top 10 (2023)](https://owasp.org/API-Security/).
 
 ### 6. Evaluative Comprehension Question
 * **Scenario**: A Page Builder feature allows merchants to supply an image URL to preview in the admin dashboard. An attacker supplies `http://169.254.169.254/latest/meta-data/iam/security-credentials/`. What attack is this, and how is it mitigated?
 * **Answer**: This is a **Server-Side Request Forgery (SSRF)** attack targeting the cloud metadata service to steal IAM role credentials. Mitigation:
   1. Do not fetch external images server-side; let the client's browser render them.
-  2. If server-side fetching is mandatory (e.g. for resizing/optimizing), resolve the domain's DNS, verify the resolved IP is not in private/loopback/link-local ranges (`169.254.x.x`), disable HTTP redirects, and enforce strict timeouts.
+  2. If server-side fetching is mandatory (e.g. for resizing/optimizing), use socket-level IP pinning, verify the resolved IP is not in private/loopback/link-local ranges (`169.254.x.x`), disable HTTP redirects (`maxRedirections: 0`), and enforce fail-closed authorization.
 
 ---
 
@@ -311,8 +311,9 @@
 ### 1. Core Principles in Practical Application
 * **The Medusa v2 Architecture**: Built around isolated **Commerce Modules**, **Workflows**, **Module Links**, and **Remote Query**.
 * **Workflows with Compensation**: Business transactions spanning multiple steps are orchestrated via `createWorkflow` and `createStep`. Mutating steps declare an explicit compensation function that rolls back changes if subsequent steps fail.
-* **Native Inventory Authority**: Stock levels and reservations are owned exclusively by Medusa's `InventoryModule` (`ReservationItem`). Reservations are placed during checkout and converted to stock deduction upon fulfillment.
-* **Official Complete Cart Semantics**: Medusa's official `completeCartWorkflow` validates the cart, reserves inventory, and authorizes payment sessions. On failure, it can cancel authorization OR issue a refund if payment was captured.
+* **Native Inventory Authority**: Stock levels and reservations are owned exclusively by Medusa's `InventoryModule` (`ReservationItem`). Reservations are created **automatically within `completeCartWorkflow`** when the order is generated from the cart. Uncompleted carts hold no reservations and have no out-of-the-box TTL holds. Overselling is prevented at the database level by transactional reservation records.
+* **Official Complete Cart Semantics**: Medusa's official completeCartWorkflow validates the cart, reserves inventory, authorizes payment sessions, and creates the order. On failure, it can cancel authorization OR issue a refund if payment was captured.
+* **Admin Authentication vs Staff Authorization (RBAC) Gap**: Medusa v2 core provides admin user authentication via @medusajs/auth, but does NOT provide fine-grained Staff RBAC (granular permissions per role/endpoint) out of the box. Custom authorization middleware or extensions must be implemented for granular permissions, and all protected endpoints must enforce fail-closed security even if Redis is unavailable.
 * **Module Links & Remote Query**: Connect custom models to core models (e.g. linking `Product` to `CmsBlock`) using `defineLink`. Fetch connected data graphs cleanly via `RemoteQuery` without touching database schemas directly.
 
 ### 2. Architectural Comparison: Correct Choice vs Counterexample
@@ -395,3 +396,24 @@
 ### 6. Evaluative Comprehension Question
 * **Scenario**: A background worker receives an event to generate a tax invoice. Due to a network blip, the worker crashes after saving the invoice but before acknowledging the message. The event is redelivered 5 seconds later. How does idempotency protect the merchant?
 * **Answer**: The worker checks the database for an existing invoice linked to `order_id` in a database transaction (`SELECT id FROM invoices WHERE order_id = $1`). Because an invoice already exists, the worker safely skips regeneration, acknowledges the message, and exits, preventing duplicate sequential invoice numbers.
+
+---
+
+## 3. Curriculum Competence Status Under 03-CURRICULUM.md Standard
+
+Per `docs/agent-os/03-CURRICULUM.md`, mastery of competences E1–E9 is evaluated on a practical 0–5 rubric requiring executable katas with real tests:
+* `0`: No evidence.
+* `1`: Repeats terms.
+* `2`: Identifies APIs.
+* `3`: Works with prompts and tests.
+* `4`: Autonomous test-backed correct tradeoff.
+* `5`: Succeeds in unseen holdout with critical edge cases.
+
+In stage **AG02**, only **theoretical literature study, architectural review, and conceptual synthesis** were authorized. No runtime application code or katas have been executed. Therefore:
+* **All E1–E9 competences remain `NOT_VERIFIED (THEORETICAL STUDY ONLY — KATA PENDING)`** against the practical execution standard.
+* Practical demonstration occurs in subsequent drill stages:
+  * **E3**: Evaluated empirically in **AG03** (Spec-Driven drill).
+  * **E4**: Evaluated empirically in **AG04** (TDD drill).
+  * **E5**: Evaluated empirically in **AG05** (Root Cause Debugging drill).
+  * **E6 & E7**: Evaluated empirically in **AG06** (Security & Reliability drill).
+  * **E1, E2, E8, E9**: Continuously validated and finalized at **AG07** (Holdout Board & Certification).

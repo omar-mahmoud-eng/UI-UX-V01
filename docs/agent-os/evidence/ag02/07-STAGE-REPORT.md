@@ -19,7 +19,7 @@ Following external architectural review on Pull Request #6 with the verdict **`C
 1. **P0 Scope Correction (Single-Store Self-Hosted Deployment)**:
    * Completely purged all multi-tenant SaaS assumptions, `tenant_id` columns, and PostgreSQL RLS proposals on Medusa core tables (`orders`, `customers`).
    * Re-anchored CommerceOS to its true charter: an isolated, self-hosted store deployment per client with dedicated database and runtime.
-   * Access control relies on native Medusa staff roles (Admin/Member) and customer-scoped queries (`customer_id`).
+   * Delineated Admin Authentication from fine-grained Staff RBAC (requiring custom authorization middleware), with fail-closed security across protected routes; customer data scoped by `customer_id`.
 2. **P0 Inventory Authority Alignment (Elimination of Shadow Stock)**:
    * Completely eliminated Redis Lua `DECR`/TTL stock counters as an inventory authority.
    * Re-established Medusa v2's native `InventoryModule` (`ReservationItem`, `createReservationsWorkflow`, and `completeCartWorkflow`) as the **sole source of truth** for stock and holds.
@@ -32,7 +32,7 @@ Following external architectural review on Pull Request #6 with the verdict **`C
    * Corrected checkout failure assumptions to align with official `completeCartWorkflow` semantics: Medusa cancels authorized holds OR issues refunds for captured payments depending on provider capabilities.
    * Documented 3DS asynchronous flow and webhook vs redirect race conditions.
 5. **P1 Source Register & Version Precision**:
-   * Noted OWASP ASVS v4.0.3 as the current stable benchmark vs v5.0 draft.
+   * Affirmed OWASP ASVS v5.0.0 as the official stable standard (ratified May 2025).
    * Clarified that the storefront starter is the GitHub repository `medusajs/nextjs-starter-medusa`, not an npm package.
    * Removed arbitrary metrics (`>40% CPU`, 6 months) or reframed them as non-binding heuristic indicators.
 6. **Deep Evaluation of 5 Audited Findings**:
@@ -50,7 +50,7 @@ All evidence artifacts in `docs/agent-os/evidence/ag02/` have been updated:
 
 | Artifact | File Path | Status | Summary of Corrections |
 | :--- | :--- | :---: | :--- |
-| **01. Source Register** | [`01-SOURCE-REGISTER.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/01-SOURCE-REGISTER.md) | Remediated | Single-store scope affirmed; ASVS 4.0.3 vs 5.0 clarified; Next.js starter clarified as GitHub repo; exact Medusa documentation links added. |
+| **01. Source Register** | [`01-SOURCE-REGISTER.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/01-SOURCE-REGISTER.md) | Remediated | Single-store scope affirmed; OWASP ASVS v5.0.0 stable ratified; Next.js starter clarified as GitHub repo; exact Medusa documentation links added. |
 | **02. Capability Matrix** | [`02-MEDUSA-CAPABILITY-MATRIX.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/02-MEDUSA-CAPABILITY-MATRIX.md) | Remediated | Medusa `ReservationItem` restored as sole inventory authority; official `completeCartWorkflow` compensation documented; zero shadow stock in Redis; single-store auth boundaries. |
 | **03. Curriculum Study Cards** | [`03-CURRICULUM-STUDY-CARDS.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/03-CURRICULUM-STUDY-CARDS.md) | Remediated | E1-E9 cards re-anchored; removed unearned "5/5 Confirmed"; fixed BOLA to query-level scoping; removed multi-tenant SaaS assumptions; arbitrary metrics reframed as heuristics. |
 | **04. Architecture Decision Record** | [`04-ADR-001-MODULAR-MONOLITH.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/04-ADR-001-MODULAR-MONOLITH.md) | Remediated | Single-store self-hosted charter ratified; tenant_id / RLS on core tables deleted; Medusa native RBAC and customer scoping enforced; native inventory authority affirmed. |
@@ -60,11 +60,30 @@ All evidence artifacts in `docs/agent-os/evidence/ag02/` have been updated:
 
 ---
 
-## 3. Curriculum Competency Baseline & Independent Re-Assessment
+## 3. Curriculum Competency Alignment & Evaluation Status
 
-* **Initial Independent Review Baseline Score**: **7.4 / 10 (Conditional Approval)**.
-* **Status**: An independent senior technical assessor has been engaged to conduct a formal re-assessment of the remediated artifacts and the 5 new scenarios.
-* **Invariants**: No automated or self-awarded grade increases. Real scores and findings are recorded based on independent review outputs.
+### A. Clarification on Theoretical Review vs Practical Competence
+An independent senior technical review evaluated the remediated documentation and scenarios, assigning an advisory theoretical composite score of **8.63 / 10** across 9 architectural discussion topics.
+
+**CRITICAL FACTUAL GOVERNANCE**:
+* This 8.63/10 score represents **theoretical literature depth and documentation quality only**.
+* It does **NOT** constitute an empirical certification of the official curriculum domains E1–E9 defined in `docs/agent-os/03-CURRICULUM.md`.
+* Under the official rubric (scale 0–5), competence levels 3–5 require **executable katas with real passing/failing tests**, which are explicitly scheduled in drill stages AG03–AG07.
+* Therefore, all official E1–E9 curriculum competences remain **`NOT_VERIFIED (THEORETICAL STUDY ONLY — KATA PENDING)`** until proven by test execution.
+
+### B. Official Curriculum Mapping & Verification Matrix
+
+| Official Domain (`03-CURRICULUM.md`) | Scope & Required Practical Kata | Theoretical Review Topic | Practical Competence Status |
+| :--- | :--- | :--- | :---: |
+| **E1: Foundations / TypeScript architecture** | Strict TS, DDD bounded contexts, public DTOs; rejected cross-module imports kata | Scalable & Modular Architecture | `NOT_VERIFIED (KATA PENDING)` |
+| **E2: Git / reproducibility** | Git worktrees, conflicts, lockfiles, revert/rollback kata | Extension Lifecycle & Operations | `NOT_VERIFIED (KATA PENDING)` |
+| **E3: Spec-driven requirements** | Spec Kit workflow; traceability; contradiction injection & detection kata | Spec-Driven Architecture | `NOT_VERIFIED (AG03 TARGET)` |
+| **E4: Test-driven development** | Failing test, minimal GREEN implementation, mutation/negative testing kata | Reliability, Resiliency & Sagas | `NOT_VERIFIED (AG04 TARGET)` |
+| **E5: Systematic debugging** | Root-cause hypothesis, diagnosing port collision, DB/Redis disconnect, auth 401/403 kata | Diagnostic Scenarios & Pitfalls | `NOT_VERIFIED (AG05 TARGET)` |
+| **E6: App security** | OWASP ASVS v5.0.0, query-level BOLA, SSRF socket-pinning, fail-closed authz kata | Application Security & OWASP ASVS | `NOT_VERIFIED (AG06 TARGET)` |
+| **E7: Reliability and capacity** | SRE SLOs, PgBouncer pooling, EXPLAIN ANALYZE, load testing with k6 kata | Performance, Caching & Scaling | `NOT_VERIFIED (AG06 TARGET)` |
+| **E8: Medusa mastery** | Native modules, links, query, workflows, completeCartWorkflow, admin auth vs RBAC kata | Medusa Core & Extension Mastery | `NOT_VERIFIED (KATA PENDING)` |
+| **E9: Extension and operations** | Modular monolith, Expand/Contract migrations, worker idempotency, plugin lifecycle kata | Database Integrity & Operations | `NOT_VERIFIED (KATA PENDING)` |
 
 ---
 
