@@ -74,10 +74,10 @@ def validate_tree(root: Path = ROOT) -> list[str]:
         else:
             errors.extend(validate_skill(path.read_text(encoding="utf-8"), dirname))
     if not errors:
-        spec = (root / "specs/000-agent-readiness/spec.md").read_text()
-        tasks = (root / "specs/000-agent-readiness/tasks.md").read_text()
-        status = (root / "docs/agent-os/STATUS.md").read_text()
-        constitution = (root / ".specify/memory/constitution.md").read_text()
+        spec = (root / "specs/000-agent-readiness/spec.md").read_text(encoding="utf-8")
+        tasks = (root / "specs/000-agent-readiness/tasks.md").read_text(encoding="utf-8")
+        status = (root / "docs/agent-os/STATUS.md").read_text(encoding="utf-8")
+        constitution = (root / ".specify/memory/constitution.md").read_text(encoding="utf-8")
         for i in range(1, 11):
             if f"AR-{i:03d}" not in spec:
                 errors.append(f"missing requirement AR-{i:03d}")
@@ -90,7 +90,7 @@ def validate_tree(root: Path = ROOT) -> list[str]:
             errors.append("F00 must be LOCKED until AG07 passes")
         if "Medusa" not in constitution or "Spec" not in constitution:
             errors.append("constitution missing Medusa/Spec constraints")
-        if "AG00" not in (root / "START_AGENT_AR.md").read_text():
+        if "AG00" not in (root / "START_AGENT_AR.md").read_text(encoding="utf-8"):
             errors.append("entry prompt must authorize AG00, not F00")
     return errors
 

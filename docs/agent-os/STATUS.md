@@ -3,7 +3,7 @@
 
 | Stage | Description | Status | Evidence |
 | --- | --- | --- | --- |
-| AG00 | Tool/source inventory | NOT_STARTED | No local Antigravity run |
+| AG00 | Tool/source inventory | PASS | Windows 11 NT 10.0.26300; Git 2.53.0 (SHA 82c467b); Node v22.15.1; Python 3.13.14; uv 0.13.0; Docker 29.8.1 (Postgres 17 + Redis 7 up); specify 1.1.4.dev0; agy CLI absent; verify_agent_os PASS |
 | AG01 | Controlled Superpowers + Spec Kit install | NOT_STARTED | No local install |
 | AG02 | Source literacy / architecture research | NOT_STARTED | No agent study exam |
 | AG03 | SDD drill | NOT_STARTED | No real CLI/skills run |

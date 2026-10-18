@@ -1,8 +1,8 @@
 # Feature 000 task checklist — ALL NOT STARTED
 
-- [ ] AG00.1 Check git SHA, branch, status; record actual machine/IDE/CLI/uv/Python/Node versions and permissions (NO installs).
-- [ ] AG00.2 Verify reviewed Superpowers and Spec Kit release/tag/manifest/hook source; list risks and install permissions; inspect local existing skill paths.
-- [ ] AG00.3 Produce sanitized inventory + initial curriculum assessment; independent reviewer verifies no code/secret mutation; STOP.
+- [x] AG00.1 Check git SHA, branch, status; record actual machine/IDE/CLI/uv/Python/Node versions and permissions (NO installs).
+- [x] AG00.2 Verify reviewed Superpowers and Spec Kit release/tag/manifest/hook source; list risks and install permissions; inspect local existing skill paths.
+- [x] AG00.3 Produce sanitized inventory + initial curriculum assessment; independent reviewer verifies no code/secret mutation; STOP.
 - [ ] AG01.1 Receive explicit installation approval and worktree; inspect plugin hooks; capture expected diff and rollback.
 - [ ] AG01.2 Install vetted Superpowers via documented Antigravity method, record SHA, verify fresh-session skill discovery or declare blocker.
 - [ ] AG01.3 Install pinned Specify CLI, initialize --integration agy on reviewed branch; reconcile collision without losing local skills; prove slash skill discovery; STOP.
