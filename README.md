@@ -51,3 +51,8 @@ Not number of features or files. Success is repeatably booting the whole system,
 
 ## Current state
 Planning package written; legacy UI/UX prompts removed from main branch via replacement tree. Old content retained on archive/pre-commerceos-reset-2026-10-18. **No application baseline is installed yet. No runtime/security/load checks have been performed.**
+
+## Advanced execution package (also planning only)
+- tasks/F03-KSA-FOUNDATION.md through tasks/F12-CAPACITY-SECURITY-GO-LIVE.md: later gates, executable only after predecessors pass.
+- .agents/skills/*/SKILL.md: 12 controlled local Antigravity playbooks; see .agents/README.md.
+- docs/19-EXECUTION-PRIMER.md and docs/20-DOMAIN-BOUNDARIES.md and docs/21-COMPATIBILITY-AND-REUSE.md: implementation protocol, complete domain map and known Medusa version traps.

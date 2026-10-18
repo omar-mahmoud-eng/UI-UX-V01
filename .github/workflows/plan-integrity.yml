@@ -16,7 +16,6 @@ jobs:
           from pathlib import Path
           files = [
             "README.md", "AGENTS.md", "START_AGENT_AR.md",
-            *[f"docs/{i:02d}-" for i in []],
             "docs/00-MASTER-CHARTER.md",
             "docs/01-ARCHITECTURE.md",
             "docs/02-SOURCE-OF-TRUTH.md",
@@ -39,7 +38,24 @@ jobs:
             "tasks/F00-BASELINE.md",
             "tasks/F01-COMMERCE-SMOKE.md",
             "tasks/F02-CUSTOM-MODULE.md",
+            "docs/19-EXECUTION-PRIMER.md",
+            "docs/20-DOMAIN-BOUNDARIES.md",
+            "docs/21-COMPATIBILITY-AND-REUSE.md",
+            "tasks/F03-KSA-FOUNDATION.md",
+            "tasks/F04-DEPLOY-RELIABILITY.md",
+            "tasks/F05-ADMIN-CMS-BUILDER.md",
+            "tasks/F06-PRODUCT-CUSTOMIZER.md",
+            "tasks/F07-STOREFRONT-DEPTH.md",
+            "tasks/F08-CRM-MARKETING.md",
+            "tasks/F09-OPERATIONS-LOGISTICS.md",
+            "tasks/F10-ANALYTICS-FINANCE.md",
+            "tasks/F11-B2B-POS-AUTOMATION.md",
+            "tasks/F12-CAPACITY-SECURITY-GO-LIVE.md",
+            ".agents/README.md",
           ]
+          skills = sorted(str(p) for p in Path(".agents/skills").glob("*/SKILL.md"))
+          assert len(skills) == 12, f"Expected 12 audited local skills, got: {len(skills)}"
+          files.extend(skills)
           missing = [p for p in files if not Path(p).is_file() or not Path(p).read_text().strip()]
           assert not missing, f"Missing or empty: {missing}"
           print(f"Planning package integrity OK: {len(files)} documents.")

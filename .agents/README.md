@@ -1,0 +1,3 @@
+# Antigravity skills — controlled local-only playbooks
+Read root AGENTS.md first. Directory .agents/skills contains 12 small, inspectable skill guides, not executable shell hooks. Use only the skill matching the currently authorized phase. Agent must check whether its IDE supports skill auto-discovery; if it does not, read these markdown files manually and do not invent agent behavior.
+Skills never supersede task acceptance, security, owner approval or the official pinned Medusa APIs. Do not install random third-party skill packages. One primary implementer per stage; independent reviewers check evidence.
