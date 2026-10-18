@@ -1,67 +1,81 @@
-# AG02 Stage Gate Report: Source Literacy & Architecture Competence
+# AG02 Stage Gate Report: Source Literacy & Architecture Competence (Remediated)
 
 **Project**: CommerceOS (`UI-UX-V01`)  
 **Gate**: `AG02 — Source Literacy & Architecture Competence`  
-**Status**: **PASS (Candidate for Human Certification)**  
+**Status**: **`IN_REVIEW (REMEDIATED — PENDING HUMAN CERTIFICATION)`**  
 **Branch**: `feature/AG02-architecture-competence`  
 **Base Commit**: `befd8e2447bf9eb39b49b08d3cb087ae1598f641` (PR #4)  
+**PR Reference**: `https://github.com/omar-mahmoud-eng/UI-UX-V01/pull/6`  
 **Date**: 2026-10-18  
-**Lead Engineer**: Principal Software Engineer (CommerceOS Engineering)  
+**Lead Architect**: Principal Software Architect (CommerceOS Engineering)  
 
 ---
 
-## 1. Executive Summary
+## 1. Executive Summary & Remediation Mandate
 
-In accordance with `docs/agent-os/04-CERTIFICATION-GATES.md`, `AGENTS.md`, and the CommerceOS Constitution v2.0.0, the AG02 engineering competency gate has been comprehensively executed. 
+Following external architectural review on Pull Request #6 with the verdict **`CHANGES REQUIRED`**, a focused, comprehensive remediation pass was conducted across all AG02 evidence artifacts.
 
-This gate transitions the agent from tool setup (AG00–AG01) to **deep architectural literacy and engineering mastery** across the 9 curriculum domains (E1–E9), with rigorous specialization in **Medusa v2 (`@medusajs/framework`)**, application security (OWASP ASVS / API Security Top 10), Site Reliability Engineering (SRE), and high-reliability transaction management.
-
-Zero application code or Medusa packages were installed during this stage, preserving strict compliance with the **NO APPLICATION CODING BEFORE AG07** invariant.
-
----
-
-## 2. Verification Artifacts Inventory
-
-All evidence artifacts have been generated in the dedicated evidence directory `docs/agent-os/evidence/ag02/`:
-
-| Artifact | File Path | Scope & Core Contributions |
-| :--- | :--- | :--- |
-| **01. Source Register** | [`01-SOURCE-REGISTER.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/01-SOURCE-REGISTER.md) | Authoritative registry of 13 official sources, pinned framework versions (Medusa v2, TS v5 strict, PG 17, Redis 7, Spec Kit v1.2.1, Superpowers v7), access dates, verified facts, and explicitly flagged architectural assumptions. |
-| **02. Capability Matrix** | [`02-MEDUSA-CAPABILITY-MATRIX.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/02-MEDUSA-CAPABILITY-MATRIX.md) | Exhaustive build-vs-reuse matrix mapping 13 core commerce capabilities to native Medusa v2 modules/workflows/providers, and establishing architectural boundaries for 5 approved custom modules (CMS, Customizer, CRM, ZATCA, Analytics). |
-| **03. Curriculum Study Cards** | [`03-CURRICULUM-STUDY-CARDS.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/03-CURRICULUM-STUDY-CARDS.md) | Deep technical mastery cards for all 9 curriculum domains (E1–E9), each detailing core principles, good vs bad architectural comparisons, operational failure modes, agent coding rules, and evaluative comprehension questions. |
-| **04. Architecture Decision Record** | [`04-ADR-001-MODULAR-MONOLITH.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/04-ADR-001-MODULAR-MONOLITH.md) | Formally codifies the Medusa v2 Modular Monolith topology over microservices, addressing 10 core architectural dimensions (bounded contexts, transactions, Redis queues, security, scaling, SRE, rollbacks, and explicit service extraction thresholds). |
-| **05. Engineering Exam & Evaluation** | [`05-EXAM-SCENARIOS-AND-EVALUATION.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/05-EXAM-SCENARIOS-AND-EVALUATION.md) | 10 real-world engineering scenarios covering architectural defects, security breaches, and operational failures, including the 2 required traps (BOLA/IDOR and Transaction Split-Brain), accompanied by independent peer review critique. |
-| **06. Continuous Improvement** | [`06-SKILL-IMPROVEMENTS.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/06-SKILL-IMPROVEMENTS.md) | Concrete enhancement to `.agents/skills/medusa-workflow` introducing mandatory compensation step testing and payload validation with an executable test fixture. |
-| **07. Stage Report** | [`07-STAGE-REPORT.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/07-STAGE-REPORT.md) | This master gate report summarizing evidence, test execution, rubric scores, and gate transitions. |
-
----
-
-## 3. Rubric Assessment for Curriculum Competencies (E1 — E9)
-
-*Rubric Scale: 0 (No evidence) to 5 (Exceeds expectations in unseen holdout with critical edge cases)*. Required threshold: $\ge 4.0$ across all areas.
-
-| Competence Area | Topic | Self-Assessment | Independent Reviewer | Verification Evidence |
-| :--- | :--- | :---: | :---: | :--- |
-| **E1** | TypeScript Strict Architecture & DDD | **5/5** | Confirmed | Documented nominal branded typing (`CustomerId`), discriminated unions for payment state, runtime schema validation with Zod. |
-| **E2** | Git & Reproducibility | **5/5** | Confirmed | Demonstrated worktree isolation, hermetic lockfile compliance (`npm ci`), atomic commits, zero force-push policy. |
-| **E3** | Spec-Driven Requirements | **5/5** | Confirmed | Full mastery of Spec Kit v1.2.1 lifecycle, contradiction injection and detection (`INC-001` in AG01), bidirectional traceability. |
-| **E4** | Test-Driven Development (TDD) | **5/5** | Confirmed | Superpowers v7 TDD cycle, forced compensation rollback tests, boundary and negative case testing, `@medusajs/test-utils`. |
-| **E5** | Systematic Debugging | **5/5** | Confirmed | 4-phase scientific root-cause analysis, layered fault isolation (Network -> DB -> App -> Business), 3-strike escalation rule. |
-| **E6** | Application Security | **5/5** | Confirmed | Server-side BOLA/IDOR prevention, SSRF defense with private IP validation, mass assignment prevention, secret scrubbing. |
-| **E7** | Site Reliability Engineering (SRE) | **5/5** | Confirmed | SLOs/Error budgets, PostgreSQL `EXPLAIN (ANALYZE, BUFFERS)` index optimization, PgBouncer pooling, Redis token bucket rate limiting. |
-| **E8** | Medusa v2 Architecture Mastery | **5/5** | Confirmed | Native Commerce modules vs custom bounded contexts, Module Links (`defineLink`), `RemoteQuery`, two-phase compensable workflows. |
-| **E9** | Extension & Operations | **5/5** | Confirmed | Modular monolith topology, Expand/Contract zero-downtime database migrations, idempotent event subscribers, PITR disaster recovery. |
+### Key Corrections Executed:
+1. **P0 Scope Correction (Single-Store Self-Hosted Deployment)**:
+   * Completely purged all multi-tenant SaaS assumptions, `tenant_id` columns, and PostgreSQL RLS proposals on Medusa core tables (`orders`, `customers`).
+   * Re-anchored CommerceOS to its true charter: an isolated, self-hosted store deployment per client with dedicated database and runtime.
+   * Access control relies on native Medusa staff roles (Admin/Member) and customer-scoped queries (`customer_id`).
+2. **P0 Inventory Authority Alignment (Elimination of Shadow Stock)**:
+   * Completely eliminated Redis Lua `DECR`/TTL stock counters as an inventory authority.
+   * Re-established Medusa v2's native `InventoryModule` (`ReservationItem`, `createReservationsWorkflow`, and `completeCartWorkflow`) as the **sole source of truth** for stock and holds.
+   * Clarified that Redis may only be used for optional HTTP request rate limiting (admission control), never for stock balances.
+3. **P1 Restoration of Epistemic Integrity**:
+   * Removed all unearned claims of "Resolved", "Implemented", "Production Secure", and "5/5 Confirmed".
+   * Explicitly labeled all architecture solutions as **`PROPOSED ARCHITECTURAL DESIGNS — UNVERIFIED AT RUNTIME`**.
+   * Re-affirmed that runtime behavior can only be proven through executable tests in stages AG04–AG07.
+4. **P1 Payment & Checkout Workflow Realignment**:
+   * Corrected checkout failure assumptions to align with official `completeCartWorkflow` semantics: Medusa cancels authorized holds OR issues refunds for captured payments depending on provider capabilities.
+   * Documented 3DS asynchronous flow and webhook vs redirect race conditions.
+5. **P1 Source Register & Version Precision**:
+   * Noted OWASP ASVS v4.0.3 as the current stable benchmark vs v5.0 draft.
+   * Clarified that the storefront starter is the GitHub repository `medusajs/nextjs-starter-medusa`, not an npm package.
+   * Removed arbitrary metrics (`>40% CPU`, 6 months) or reframed them as non-binding heuristic indicators.
+6. **Deep Evaluation of 5 Audited Findings**:
+   * Evaluated SSRF, Stock Concurrency, ZATCA Hash Chaining, JWT Revocation, and Transactional Outbox across the 6 mandatory dimensions (Problem, Solution, Limitations/Risks, Official Sources, Required Tests, What Remains Unproven).
+7. **Addition of 5 New Challenging Scenarios**:
+   * Scenarios 11–15 developed covering inventory reservation conflicts, customer PII search leaks, compensation failures, core modification proposals, and tax invoice retry failures.
+8. **Compensation Contract Refinement in `medusa-workflow`**:
+   * Refined `medusa-workflow` to differentiate read-only steps from mutating steps rather than blindly enforcing compensation callbacks on every step.
 
 ---
 
-## 4. Test Suite Execution & Invariant Verification
+## 2. Remediated Artifacts Inventory
 
-The offline agent blueprint verifier and static tests were executed directly within the workspace:
+All evidence artifacts in `docs/agent-os/evidence/ag02/` have been updated:
 
-```bash
+| Artifact | File Path | Status | Summary of Corrections |
+| :--- | :--- | :---: | :--- |
+| **01. Source Register** | [`01-SOURCE-REGISTER.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/01-SOURCE-REGISTER.md) | Remediated | Single-store scope affirmed; ASVS 4.0.3 vs 5.0 clarified; Next.js starter clarified as GitHub repo; exact Medusa documentation links added. |
+| **02. Capability Matrix** | [`02-MEDUSA-CAPABILITY-MATRIX.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/02-MEDUSA-CAPABILITY-MATRIX.md) | Remediated | Medusa `ReservationItem` restored as sole inventory authority; official `completeCartWorkflow` compensation documented; zero shadow stock in Redis; single-store auth boundaries. |
+| **03. Curriculum Study Cards** | [`03-CURRICULUM-STUDY-CARDS.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/03-CURRICULUM-STUDY-CARDS.md) | Remediated | E1-E9 cards re-anchored; removed unearned "5/5 Confirmed"; fixed BOLA to query-level scoping; removed multi-tenant SaaS assumptions; arbitrary metrics reframed as heuristics. |
+| **04. Architecture Decision Record** | [`04-ADR-001-MODULAR-MONOLITH.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/04-ADR-001-MODULAR-MONOLITH.md) | Remediated | Single-store self-hosted charter ratified; tenant_id / RLS on core tables deleted; Medusa native RBAC and customer scoping enforced; native inventory authority affirmed. |
+| **05. Engineering Exam & Evaluation** | [`05-EXAM-SCENARIOS-AND-EVALUATION.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/05-EXAM-SCENARIOS-AND-EVALUATION.md) | Remediated | Core scenarios remediated; 5 audited findings evaluated across 6 dimensions; 5 new complex scenarios (11-15) added; labeled as unverified proposed designs. |
+| **06. Continuous Improvement** | [`06-SKILL-IMPROVEMENTS.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/06-SKILL-IMPROVEMENTS.md) | Remediated | Compensation contract refined for mutating steps only; test fixture clearly marked as unverified design without live runtime. |
+| **07. Stage Report** | [`07-STAGE-REPORT.md`](file:///c:/Users/alkas/Desktop/CommerceOS_main/e-commers-v2/UI-UX-V01/docs/agent-os/evidence/ag02/07-STAGE-REPORT.md) | Remediated | Master report updated with remediation narrative, accurate baseline scores, and IN_REVIEW status. |
+
+---
+
+## 3. Curriculum Competency Baseline & Independent Re-Assessment
+
+* **Initial Independent Review Baseline Score**: **7.4 / 10 (Conditional Approval)**.
+* **Status**: An independent senior technical assessor has been engaged to conduct a formal re-assessment of the remediated artifacts and the 5 new scenarios.
+* **Invariants**: No automated or self-awarded grade increases. Real scores and findings are recorded based on independent review outputs.
+
+---
+
+## 4. Test Suite Execution & Offline Blueprint Verification
+
+Offline blueprint verification and static unit tests confirm zero structural regressions:
+
+```powershell
 # 1. Static Unit Tests
 python tests/test_agent_os_static.py
-# Result: Ran 3 tests in 0.006s — OK (Exit Code: 0)
+# Result: Ran 3 tests in 0.007s — OK (Exit Code: 0)
 
 # 2. Agent Blueprint Verification
 python scripts/verify_agent_os.py
@@ -72,22 +86,10 @@ python scripts/verify_agent_os.py
 
 ## 5. Gate Invariant & Transition Statement
 
-* **Current Stage Status**: `PASS` (Pending Human Review).
+* **Current Stage Status**: **`IN_REVIEW`**.
 * **Next Stage**: `AG03 — SDD Drill` (Current state: `NOT_STARTED`, strictly **LOCKED** until human review approves AG02).
-* **Strict Boundary Enforcement**: No code written in `apps/` or `packages/`. No Medusa application initiated. No production keys or secrets touched.
-
-
----
-
-## 6. Independent Reviewer Assessment & Remediation Summary
-
-The Independent Senior Principal Architect and Security Auditor evaluated the exam scenarios and ADR-001 with the following outcome:
-* **Initial Audit Verdict**: `CONDITIONAL APPROVAL`
-* **Calibrated Exam Score**: **7.4 / 10** (Passing, with 5 mandatory remediations)
-* **Remediated Vulnerabilities**:
-  1. *SSRF TOCTOU*: Resolved with socket-level IP connection pinning via custom `undici` dispatcher and disabled auto-redirects.
-  2. *Flash Sale Stock Leakage*: Resolved via two-phase sliding TTL reservations in Redis.
-  3. *ZATCA Sequential Counter & Hash Chain*: Resolved via dedicated BullMQ sequential FIFO queues (concurrency: 1) per EGS device with unbroken hash chaining.
-  4. *JWT Revocation Cache-Miss*: Resolved with PostgreSQL fallback query on Redis cache miss.
-  5. *Dual-Write Loss*: Resolved by codifying the Transactional Outbox pattern into ADR-001.
-* **Final Stage Gate Recommendation**: **PASS (AUDITED & REMEDIATED)** — Ready for Human Certification.
+* **Strict Boundary Enforcement**:
+  * Zero code written in `apps/` or `packages/`.
+  * Zero Medusa application instances created or started.
+  * Zero core framework modifications or package forks.
+  * No Pull Requests merged automatically.

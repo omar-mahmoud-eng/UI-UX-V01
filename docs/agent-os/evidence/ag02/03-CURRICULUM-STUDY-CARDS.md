@@ -1,15 +1,16 @@
-# AG02 Engineering Curriculum Study Cards (E1 — E9)
+# AG02 Engineering Curriculum Study Cards (E1 — E9) (Remediated)
 
 **Audience**: Principal Engineering Review, Antigravity Autonomous Orchestrator  
 **Reference Baseline**: `docs/agent-os/03-CURRICULUM.md` & `docs/agent-os/12-READING-LIST.md`  
-**Standard**: Deep technical competency with concrete architectural examples, failure modes, agent operational rules, and evaluative problem-solving questions.
+**Architecture Scope**: **Single-Store Self-Hosted Deployment per Client**  
+**Evaluation Standard**: Architectural literacy and conceptual rigor grounded in official documentation. (Empirical runtime behavior is deferred to practical drill stages AG04–AG07).
 
 ---
 
 ## E1: TypeScript Architecture & Domain-Driven Design (DDD)
 
 ### 1. Core Principles in Practical Application
-* **Strict Compile-Time Invariants**: Configuration must enable `"strict": true`, `"noImplicitAny": true`, `"strictNullChecks": true`, and `"exactOptionalPropertyTypes": true`. Types are not merely documentation; they model system states and reject invalid states at compile time.
+* **Strict Compile-Time Invariants**: Configuration must enable `"strict": true`, `"noImplicitAny": true`, `"strictNullChecks": true`, and `"exactOptionalPropertyTypes": true`. Types model system states and reject invalid states at compile time.
 * **Domain-Driven Design (DDD) Bounded Contexts**: Modules own their private domain models, entities, and services. Inter-module communication occurs strictly via explicit public Data Transfer Objects (DTOs) and service contracts. Direct database cross-table joins or importing another module's internal schema models is an architectural violation.
 * **Pragmatic SOLID & Composition over Inheritance**: Avoid deep inheritance hierarchies. Compose specialized functions and injected dependencies. Program to interfaces and DTOs.
 * **Type Narrowing & Nominal/Branded Typing**: Use Discriminated Unions for state machines (e.g. `OrderStatus = 'pending' | 'authorized' | 'captured' | 'failed'`). Use branded types for identifiers to prevent accidental transposition of `CustomerId` and `OrderId` strings.
@@ -48,7 +49,7 @@
 
 ### 4. Mandatory Agent Coding Invariants
 * Never use `any`. Use `unknown` and narrow down with type guards or runtime validators.
-* Never import private internal paths (e.g. `import { InternalModel } from "../other-module/models/internal"`). Import only from the module's public entry point (`index.ts`).
+* Never import private internal paths. Import only from the module's public entry point (`index.ts`).
 * Enforce runtime schema validation for all external HTTP inputs, job queue payloads, and webhook payloads.
 
 ### 5. Official Versioned Citations
@@ -143,7 +144,7 @@
 
 ### 2. Architectural Comparison: Correct Choice vs Counterexample
 * **Correct Choice**:
-  * Writing an integration test that creates an order, attempts to capture payment twice simultaneously, and asserts that exactly one capture succeeds while the second returns a 409 Conflict idempotency error.
+  * Writing an integration test that creates an order, attempts to capture payment twice simultaneously, and asserts that exactly one capture succeeds while the second returns an idempotency conflict.
 * **Anti-Pattern (Counterexample)**:
   * Mocking out the entire database and payment gateway in a unit test so thoroughly that the test passes, while in production the actual PostgreSQL query fails due to a missing table index or transaction lock timeout.
 
@@ -218,20 +219,22 @@
 ## E6: Application Security & OWASP ASVS
 
 ### 1. Core Principles in Practical Application
-* **Server-Side Enforcement Over Client-Side Hiding**: Security rules and object permissions must be verified on the server for every HTTP route and WebSocket message. Hiding buttons in the UI is zero security.
-* **Broken Object-Level Authorization (BOLA / IDOR Prevention)**: Never allow `GET /store/orders/:id` to fetch an order purely by its primary key ID. The server must enforce: `WHERE id = :id AND customer_id = :authenticated_customer_id`.
-* **Server-Side Request Forgery (SSRF) Defense**: When downloading external assets (e.g. merchant image URLs in Page Builder or webhooks in Payment/Fulfillment), strictly validate URLs against an IP allowlist, block RFC 1918 private IP ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), and block cloud metadata IP (`169.254.169.254`).
+* **Server-Side Enforcement Over Client-Side Hiding**: Security rules and object permissions must be verified on the server for every HTTP route. Hiding buttons in the UI is zero security.
+* **Broken Object-Level Authorization (BOLA / IDOR Prevention)**: Never allow `GET /store/orders/:id` to fetch an order purely by its primary key ID into memory before checking ownership. The database query must enforce: `orderService.listOrders({ id: orderId, customer_id: authenticatedCustomerId })`.
+* **Guest Checkout Security**: Support guest orders securely by requiring a cryptographically signed token (HMAC with order ID and secret) for post-purchase tracking, preventing guest order enumeration.
+* **Server-Side Request Forgery (SSRF) Defense**: When downloading external assets (e.g. merchant image URLs in Page Builder or webhooks in Payment/Fulfillment), strictly validate URLs against an IP allowlist, block RFC 1918 private IP ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), and block cloud metadata IP (`169.254.169.254`) at the socket connection level.
 * **Input Sanitization & Output Encoding**: Prevent Stored XSS in CMS page builders and product customizers by sanitizing raw HTML using robust parsers (`DOMPurify`) and escaping dynamic variables in templates.
-* **Defense in Depth**: Use Content Security Policy (CSP) headers, secure HTTP-only SameSite cookies, rate limiting on authentication routes, and parameterized SQL queries exclusively.
 
 ### 2. Architectural Comparison: Correct Choice vs Counterexample
 * **Correct Choice**:
   ```typescript
-  // Secure: Server-side object ownership verification
+  // Secure: Database-level query scoping preventing BOLA
   export async function getCustomerOrder(authenticatedCustomerId: string, orderId: string) {
-    const order = await orderService.retrieve(orderId);
-    if (!order || order.customer_id !== authenticatedCustomerId) {
-      // Return 404 to avoid leaking existence of another customer's order ID
+    const [order] = await orderService.listOrders({
+      id: orderId,
+      customer_id: authenticatedCustomerId,
+    }, { select: ["id", "total", "items", "shipping_address"] });
+    if (!order) {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
     }
     return order;
@@ -239,10 +242,13 @@
   ```
 * **Anti-Pattern (Counterexample)**:
   ```typescript
-  // Insecure: BOLA / IDOR vulnerability
-  export async function getCustomerOrder(orderId: string) {
-    // Fetches order directly by ID from request parameters without checking who is logged in!
-    return await orderService.retrieve(orderId);
+  // Insecure: In-memory filtering after full entity retrieval
+  export async function getCustomerOrder(authenticatedCustomerId: string, orderId: string) {
+    const order = await orderService.retrieve(orderId); // PII loaded into memory before authorization!
+    if (order.customer_id !== authenticatedCustomerId) {
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
+    }
+    return order;
   }
   ```
 
@@ -251,12 +257,12 @@
 * **Mass Assignment Vulnerabilities**: Blindly spreading request bodies into database update queries (`orderService.update(id, req.body)`), allowing attackers to overwrite fields like `role = 'admin'` or `is_paid = true`.
 
 ### 4. Mandatory Agent Coding Invariants
-* Every data retrieval endpoint must verify tenant/customer ownership on the server.
+* Every data retrieval endpoint must verify customer ownership at the database query level.
 * Never commit real API keys, passwords, or credentials. Use sanitized mocks in tests.
 * Parameterize all SQL queries. Never concatenate raw strings into database queries.
 
 ### 5. Official Versioned Citations
-* OWASP ASVS v4.0.3: [Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/).
+* OWASP ASVS: [Application Security Verification Standard v4.0.3 Stable / v5.0 Draft](https://owasp.org/www-project-application-security-verification-standard/) (Accessed: 2026-10-18).
 * OWASP API Security: [API Security Top 10 (2023)](https://owasp.org/API-Security/).
 
 ### 6. Evaluative Comprehension Question
@@ -267,26 +273,26 @@
 
 ---
 
-## E7: Site Reliability Engineering (SRE) & Performance Budgets
+## E7: Site Reliability Engineering (SRE) & Performance Heuristics
 
 ### 1. Core Principles in Practical Application
-* **SLOs and Error Budgets**: Define clear Service Level Indicators (SLIs) and Objectives (SLOs) (e.g. "99.5% of checkout API requests respond in < 500ms over 30 days"). The remaining 0.5% is the Error Budget used for releases and experiments.
+* **SLOs and Error Budgets**: Define clear Service Level Indicators (SLIs) and Objectives (SLOs) (e.g. checkout API responsiveness under normal operating conditions).
 * **Database Query Performance & Indexing**: Use PostgreSQL `EXPLAIN (ANALYZE, BUFFERS)` to detect sequential scans (`Seq Scan`) on large tables, index bloat, and missing composite indexes.
-* **Connection Pooling**: Node.js applications open multiple connections. Use a connection pooler (`PgBouncer`) to avoid exhausting PostgreSQL max connections and to maintain low latency under load spikes.
-* **Cascading Failure Prevention**: Implement circuit breakers, request timeouts, and bulkhead isolation. When a payment gateway experiences latency, fail fast rather than exhausting all Node.js web server worker threads.
+* **Connection Pooling**: Node.js applications open multiple connections. Use a connection pooler (`PgBouncer`) to avoid exhausting PostgreSQL max connections under load spikes.
+* **Cascading Failure Prevention**: Implement circuit breakers, request timeouts, and bulkhead isolation. When an external payment gateway experiences latency, fail fast rather than exhausting all Node.js web server worker threads.
 
 ### 2. Architectural Comparison: Correct Choice vs Counterexample
 * **Correct Choice**:
-  * Offloading order invoice PDF generation and ZATCA compliance signing to background worker queues (`medusa worker` via BullMQ/Redis), keeping the checkout HTTP response fast (< 250ms).
+  * Offloading non-critical side effects (e.g. email notifications, asynchronous reporting projections) to background worker queues (`medusa worker` via Redis/BullMQ), keeping the checkout HTTP response fast and focused.
 * **Anti-Pattern (Counterexample)**:
-  * Generating PDFs, calling 3 external REST APIs, and running un-indexed heavy analytical aggregation queries synchronously inside the `POST /store/carts/:id/complete` HTTP request handler, causing HTTP connection timeouts and worker starvation.
+  * Generating PDFs, calling 3 external REST APIs, and running un-indexed heavy analytical aggregation queries synchronously inside the `POST /store/carts/:id/complete` HTTP request handler.
 
 ### 3. Operational & Security Pitfalls
-* **Unbounded Concurrency**: Allowing an unlimited number of concurrent background jobs to fire, overwhelming the database connection pool and causing database lock starvation for active shoppers.
+* **Unbounded Concurrency**: Allowing an unlimited number of concurrent background jobs to fire, overwhelming the database connection pool.
 * **Memory Leaks in Node.js Event Loop**: Accumulating event listeners or caching unbounded objects in global memory variables, leading to heap out-of-memory (OOM) crashes under sustained traffic.
 
 ### 4. Mandatory Agent Coding Invariants
-* Measure and log execution duration for all critical database transactions and external API calls.
+* Measure execution duration for all critical database transactions and external API calls.
 * Add database indexes to any foreign key or column frequently used in `WHERE`, `ORDER BY`, or `JOIN` clauses.
 * Offload non-critical side effects to background workers.
 
@@ -295,7 +301,7 @@
 * PostgreSQL 17 Docs: [Using EXPLAIN](https://www.postgresql.org/docs/17/using-explain.html).
 
 ### 6. Evaluative Comprehension Question
-* **Scenario**: Under a flash sale load of 1,000 requests/sec, the database CPU spikes to 100%, and connection timeout errors spike. An `EXPLAIN ANALYZE` on the checkout cart query reveals a `Seq Scan on line_item` with `Filter: (cart_id = $1)`. What is the root cause and remedy?
+* **Scenario**: During heavy traffic, the database CPU spikes to 100%, and connection timeout errors occur. An `EXPLAIN ANALYZE` on the cart query reveals a `Seq Scan on line_item` with `Filter: (cart_id = $1)`. What is the root cause and remedy?
 * **Answer**: The root cause is a missing index on `line_item.cart_id`, forcing PostgreSQL to scan the entire table for every cart fetch. Remedy: Create a B-tree index `CREATE INDEX idx_line_item_cart_id ON line_item(cart_id);`, reducing query complexity from $O(N)$ to $O(\log N)$.
 
 ---
@@ -303,38 +309,39 @@
 ## E8: Medusa v2 Architecture & Extension Mastery
 
 ### 1. Core Principles in Practical Application
-* **The Medusa v2 Architecture**: Medusa v2 is built around isolated **Commerce Modules**, **Workflows**, **Module Links**, and **Remote Query**.
-* **Workflows with Compensation**: Business transactions spanning multiple steps are orchestrated via `createWorkflow` and `createStep`. Every step that performs a mutating action must declare a compensation function that rolls back changes if subsequent steps fail.
+* **The Medusa v2 Architecture**: Built around isolated **Commerce Modules**, **Workflows**, **Module Links**, and **Remote Query**.
+* **Workflows with Compensation**: Business transactions spanning multiple steps are orchestrated via `createWorkflow` and `createStep`. Mutating steps declare an explicit compensation function that rolls back changes if subsequent steps fail.
+* **Native Inventory Authority**: Stock levels and reservations are owned exclusively by Medusa's `InventoryModule` (`ReservationItem`). Reservations are placed during checkout and converted to stock deduction upon fulfillment.
+* **Official Complete Cart Semantics**: Medusa's official `completeCartWorkflow` validates the cart, reserves inventory, and authorizes payment sessions. On failure, it can cancel authorization OR issue a refund if payment was captured.
 * **Module Links & Remote Query**: Connect custom models to core models (e.g. linking `Product` to `CmsBlock`) using `defineLink`. Fetch connected data graphs cleanly via `RemoteQuery` without touching database schemas directly.
-* **Admin Extensions**: Extend the admin dashboard via UI Widgets and UI Routes using React and `@medusajs/ui`. Extensions load seamlessly into the Vite bundle without rebuilding the core server.
 
 ### 2. Architectural Comparison: Correct Choice vs Counterexample
 * **Correct Choice**:
   ```typescript
   import { createStep, createWorkflow, StepResponse } from "@medusajs/framework/workflows-sdk";
 
-  // Step with robust two-phase compensation
+  // Mutating step with explicit compensation contract
   export const reserveLoyaltyPointsStep = createStep(
     "reserve-loyalty-points",
     async ({ customerId, points }: { customerId: string; points: number }, { container }) => {
       const loyaltyService = container.resolve("loyaltyModuleService");
       const reservation = await loyaltyService.reservePoints(customerId, points);
-      // Return reservation and compensation payload
+      // Return output AND explicit rollback payload
       return new StepResponse(reservation, { reservationId: reservation.id });
     },
-    async ({ reservationId }, { container }) => {
-      // Compensation: runs automatically if any subsequent workflow step fails
+    async (compensationData, { container }) => {
+      if (!compensationData) return;
       const loyaltyService = container.resolve("loyaltyModuleService");
-      await loyaltyService.cancelReservation(reservationId);
+      await loyaltyService.cancelReservation(compensationData.reservationId);
     }
   );
   ```
 * **Anti-Pattern (Counterexample)**:
-  * Manually calling `loyaltyService.reservePoints()` inside a route handler, and when payment fails 3 lines later, leaving the customer's loyalty points permanently deducted because no compensation logic was registered.
+  * Manually calling mutating service methods inside an API route handler without a workflow. When payment fails 3 lines later, customer data is left corrupted because no compensation logic was registered.
 
 ### 3. Operational & Security Pitfalls
 * **Direct Database Manipulation**: Bypassing Medusa Module services and writing raw SQL updates to core Medusa tables. This corrupts internal caches, bypasses event emission, and breaks future framework upgrades.
-* **Inventing Non-Existent APIs**: Guessing Medusa v1 methods (e.g. `cartService.createLineItem()`) inside a Medusa v2 project. Always consult official Medusa v2 API references.
+* **Inventing Non-Existent APIs**: Guessing Medusa v1 methods inside a Medusa v2 project. Always consult official Medusa v2 API references.
 
 ### 4. Mandatory Agent Coding Invariants
 * Always define compensation logic for mutating steps in Medusa Workflows.
@@ -343,34 +350,34 @@
 
 ### 5. Official Versioned Citations
 * Medusa Documentation: [Medusa Workflows](https://docs.medusajs.com/learn/fundamentals/workflows) (Accessed: 2026-10-18).
-* Medusa Documentation: [Module Links](https://docs.medusajs.com/learn/fundamentals/module-links) (Accessed: 2026-10-18).
-* Medusa Documentation: [Admin Extensions](https://docs.medusajs.com/learn/fundamentals/admin) (Accessed: 2026-10-18).
+* Medusa Documentation: [Inventory Reservations Lifecycle](https://docs.medusajs.com/resources/commerce-modules/inventory/reservations-lifecycle) (Accessed: 2026-10-18).
+* Medusa Documentation: [Checkout Complete Cart](https://docs.medusajs.com/resources/storefront-development/checkout/complete-cart) (Accessed: 2026-10-18).
 
 ### 6. Evaluative Comprehension Question
 * **Scenario**: You need to link a custom `Review` model to Medusa's native `Product` model. How should this be implemented in Medusa v2 without adding a foreign key to the native `product` table?
 * **Answer**:
   1. Define a custom module `ReviewModule` with a `Review` data model.
   2. In `src/links/product-review.ts`, use `defineLink` to establish a link between `ProductModule.linkable.product` and `ReviewModule.linkable.review`.
-  3. Query products and their reviews together in API routes or storefront using `container.resolve("remoteQuery")`.
+  3. Query products and their reviews together using `container.resolve("remoteQuery")`.
 
 ---
 
 ## E9: Extension Lifecycle & Operational Resilience
 
 ### 1. Core Principles in Practical Application
-* **Modular Monolith Lifecycle**: Start with a single deployable modular monolith. Keep modules strictly decoupled through internal contracts so that extracting a module into a microservice in the future is a deployment configuration change, not a rewrite.
-* **Safe Migrations & Zero-Downtime Rollbacks**: All schema migrations must follow the **Expand/Contract pattern**:
+* **Modular Monolith Lifecycle**: Single deployable modular monolith on a per-merchant self-hosted basis. Modules communicate via internal contracts so future extraction is possible without rewrites.
+* **Safe Migrations & Zero-Downtime Rollbacks**: All schema migrations follow the **Expand/Contract pattern**:
   1. *Expand*: Add new nullable column or table. Deploy code that writes to both old and new columns.
-  2. *Backfill*: Migrate existing historical data.
+  2. *Backfill*: Migrate existing historical data in chunked batches.
   3. *Contract*: Deploy code that reads exclusively from new column. Drop old column in a subsequent release.
-* **Idempotency in Workers & Subscribers**: Event buses deliver messages with *at-least-once* semantics. Worker subscribers must record processed event IDs (`message_id` or `idempotency_key`) to prevent duplicate operations (e.g. charging a credit card twice or issuing duplicate invoices).
+* **Idempotency in Workers & Subscribers**: Event buses deliver messages with *at-least-once* semantics. Worker subscribers must record processed event IDs (`message_id` or `idempotency_key`) to prevent duplicate operations (e.g. charging a card twice or issuing duplicate invoices).
 * **Disaster Recovery & Point-In-Time Recovery (PITR)**: Production databases must have continuous Write-Ahead Log (WAL) archiving to allow restoring to any specific second before a disaster occurred.
 
 ### 2. Architectural Comparison: Correct Choice vs Counterexample
 * **Correct Choice**:
-  * Adding a column: Migration 1 adds `address_line_2` as nullable. App version 1.1 deploys cleanly without breaking active queries. In next release, field is utilized.
+  * Adding a column: Migration 1 adds `address_line_2` as nullable. App deploys cleanly without breaking active queries. In next release, field is utilized.
 * **Anti-Pattern (Counterexample)**:
-  * Deploying a migration that renames a column `customer_name` to `full_name` in a live production table with 500,000 rows. The active web application instantly crashes on all customer profile reads because it still queries `customer_name`.
+  * Deploying a migration that renames a column `customer_name` to `full_name` in a live production table. The active web application instantly crashes on all customer profile reads because it still queries `customer_name`.
 
 ### 3. Operational & Security Pitfalls
 * **Destructive Migrations Without Rollback Plans**: Running `DROP TABLE` or `ALTER COLUMN NOT NULL` without a tested backward-compatible migration plan.
@@ -386,5 +393,5 @@
 * PostgreSQL 17 Docs: [Continuous Archiving & PITR](https://www.postgresql.org/docs/17/continuous-archiving.html).
 
 ### 6. Evaluative Comprehension Question
-* **Scenario**: A background worker receives an `order.placed` event from Redis to generate a Saudi ZATCA e-invoice. Due to a network blip, the worker crashes after saving the invoice but before acknowledging the message to Redis. Redis redelivers the event 5 seconds later. How does idempotency protect the merchant?
-* **Answer**: The worker checks the database for an existing ZATCA invoice linked to `order_id` in a database transaction (`SELECT id FROM zatca_invoices WHERE order_id = $1`). Because an invoice already exists, the worker safely skips XML regeneration, acknowledges the message, and exits, preventing duplicate sequential invoice numbers which would violate ZATCA compliance.
+* **Scenario**: A background worker receives an event to generate a tax invoice. Due to a network blip, the worker crashes after saving the invoice but before acknowledging the message. The event is redelivered 5 seconds later. How does idempotency protect the merchant?
+* **Answer**: The worker checks the database for an existing invoice linked to `order_id` in a database transaction (`SELECT id FROM invoices WHERE order_id = $1`). Because an invoice already exists, the worker safely skips regeneration, acknowledges the message, and exits, preventing duplicate sequential invoice numbers.

