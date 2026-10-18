@@ -5,7 +5,7 @@
 | --- | --- | --- | --- |
 | AG00 | Tool/source inventory | PASS | Windows 11 NT 10.0.26300; Git 2.53.0 (SHA 82c467b); Node v22.15.1; Python 3.13.14; uv 0.13.0; Docker 29.8.1 (Postgres 17 + Redis 7 up); specify 1.1.4.dev0; agy CLI absent; verify_agent_os PASS |
 | AG01 | Controlled Superpowers + Spec Kit install | PASS | Live Antigravity verification verified: Superpowers v7.0.0 active in IDE (15 skills in ~/.gemini/config/plugins/superpowers); Spec Kit v1.2.1 active (10 speckit-* skills in .agents/skills); Live speckit-specify + speckit-analyze detected contradiction INC-001 in specs/002-token-bucket-limiter; Live systematic-debugging verified on config_merger defect (RED->GREEN); Constitution v2.0.0 and 20 local skills preserved 100%; PR #4 updated |
-| AG02 | Source literacy / architecture research | NOT_STARTED | No agent study exam |
+| AG02 | Source literacy / architecture research | PASS | Curriculum E1-E9 study cards complete; Medusa v2 capability matrix & bounded contexts approved; ADR-001 Modular Monolith ratified with RLS & Outbox; 10 real-world exam scenarios audited by independent subagent (Score 7.4/10, Conditional Approval -> 5 remediations implemented); verify_agent_os PASS |
 | AG03 | SDD drill | NOT_STARTED | No real CLI/skills run |
 | AG04 | TDD drill | NOT_STARTED | No scratch code test |
 | AG05 | Root cause debug drill | NOT_STARTED | No runtime diagnostics |
