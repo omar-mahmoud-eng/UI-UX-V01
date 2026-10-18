@@ -4,7 +4,7 @@
 | Stage | Description | Status | Evidence |
 | --- | --- | --- | --- |
 | AG00 | Tool/source inventory | PASS | Windows 11 NT 10.0.26300; Git 2.53.0 (SHA 82c467b); Node v22.15.1; Python 3.13.14; uv 0.13.0; Docker 29.8.1 (Postgres 17 + Redis 7 up); specify 1.1.4.dev0; agy CLI absent; verify_agent_os PASS |
-| AG01 | Controlled Superpowers + Spec Kit install | NOT_STARTED | No local install |
+| AG01 | Controlled Superpowers + Spec Kit install | PASS | Superpowers v7.0.0 installed into ~/.gemini/config/plugins/superpowers (15 skills, manifest verified, no unreviewed hooks); specify-cli upgraded to v1.2.1 (commit 9dca9bf) and initialized with agy+ps (10 speckit-* skills added, constitution.md preserved 100%, 0 collisions across 45 skills); integration test PASS |
 | AG02 | Source literacy / architecture research | NOT_STARTED | No agent study exam |
 | AG03 | SDD drill | NOT_STARTED | No real CLI/skills run |
 | AG04 | TDD drill | NOT_STARTED | No scratch code test |
