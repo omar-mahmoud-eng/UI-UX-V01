@@ -1,3 +1,6 @@
-# Antigravity skills — controlled local-only playbooks
-Read root AGENTS.md first. Directory .agents/skills contains 12 small, inspectable skill guides, not executable shell hooks. Use only the skill matching the currently authorized phase. Agent must check whether its IDE supports skill auto-discovery; if it does not, read these markdown files manually and do not invent agent behavior.
-Skills never supersede task acceptance, security, owner approval or the official pinned Medusa APIs. Do not install random third-party skill packages. One primary implementer per stage; independent reviewers check evidence.
+# 20 Local CommerceOS Skills + external frameworks after AG01
+This directory includes 20 professionally scoped, auditable skill descriptors with YAML frontmatter, activation rules, preflights, real tests, failure handling, review and proof. The 12 older domain skills were replaced and 8 meta-engineering skills added.
+
+The local files DO NOT automatically install Superpowers or Spec Kit. During approved AG01, install Superpowers using official Antigravity plugin route and Spec Kit with integration agy; their own skill descriptions should be discovered alongside these local skills. Keep names separate. If an installer overwrites files, restore/reconcile and report.
+
+Read AGENTS.md, .specify/memory/constitution.md, docs/agent-os/05-ROUTER.md FIRST. Never invoke a skill to bypass current AG/F task gates. The strongest skill is the one whose result you can test and independently verify.

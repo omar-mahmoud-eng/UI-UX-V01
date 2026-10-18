@@ -1,14 +1,11 @@
-# 15 — Real execution ledger
-DO NOT fabricate entries or flip a gate to PASS without objective evidence.
+# 15 — Real product execution ledger (no fabricated PASS)
+| Date | Stage | Status | Evidence |
+| --- | --- | --- | --- |
+| 2026-10-18 | PLAN v1 | DOCUMENTED ONLY | Original Medusa-first plan committed; no app running |
+| 2026-10-18 | Agent OS v2 | DOCUMENTED ONLY | Training program/spec/20 skills/structural CI; practical qualification NOT RUN |
+| 2026-10-18 | AG00-AG07 | NOT_STARTED | See docs/agent-os/STATUS.md |
+| 2026-10-18 | F00 | LOCKED | Until AG07 human-approved PASS |
+| 2026-10-18 | F01-F12 | LOCKED | Must pass applicable previous gates |
 
-| Date | Stage | Status | Commit / Evidence | Notes |
-| --- | --- | --- | --- | --- |
-| 2026-10-18 | PLAN | DOCUMENTED ONLY | reset branch commit (to fill after push) | Created Medusa-first architecture and agent package; no application installed or validated. |
-| 2026-10-18 | F00 | NOT_STARTED | None | Official starter not yet installed; do not infer success. |
-| 2026-10-18 | F01-F12 | NOT_STARTED | None | Backlog only. |
-
-## Mandatory new entry format
-YYYY-MM-DD HH:mm (Asia/Riyadh) / phase and task / PASS-FAIL-BLOCKED / git SHA / OS versions / actual commands+exit codes / sanitized evidence paths / URLs visited / DB migration IDs / successful and failing test totals / known security issues / backup+rollback / reviewer.
-
-## Current status
-All design documents are proposed requirements. Neither security scan, load test nor browser runtime has been run. Never report this planning commit as a working store.
+Actual product test entry requires: date Asia/Riyadh, stage, commit SHA, host tool versions, exact run commands/exits, APIs/browser proof, DB state/migrations, test counts and skipped, security findings, reviewer, rollback and next authorized action.
+A documentation-only GitHub Action PASS is not application test PASS.

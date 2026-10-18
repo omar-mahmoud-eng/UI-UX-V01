@@ -1,0 +1,22 @@
+name: Agent OS structural verification (documentation only)
+on:
+  push:
+    branches: [main, "agent-os/**"]
+  pull_request:
+jobs:
+  agent-plan:
+    name: Static agent plan and skill validation — NOT Antigravity
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Verify plan and skill structure
+        run: python3 scripts/verify_agent_os.py
+      - name: Test verifier rejects false metadata
+        run: python3 -m unittest discover -s tests -p "test_agent_os_static.py" -v
+      - name: Distinguish verification scope
+        run: |
+          echo "PASS of this workflow verifies ONLY static files and metadata."
+          echo "No external Superpowers/Spec Kit installation, Antigravity integration, Medusa runtime, browser, security or load test is executed."

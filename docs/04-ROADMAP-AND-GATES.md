@@ -1,4 +1,6 @@
-# 04 — Stage roadmap and stop/go gates
+# 04 — Product stage roadmap and stop/go gates
+
+**v2 BLOCKER: The agent must first complete AG00-AG07 with human-approved certification per docs/agent-os/04-CERTIFICATION-GATES.md. F00 may not start before AG07 PASS.**
 
 ## Work doctrine
 Every stage delivers a real vertically usable increment. The previous stage is a verified release candidate (tag/commit + evidence); failure never means advancing with a longer TODO list. One stage per agent session. No parallel migration owners.

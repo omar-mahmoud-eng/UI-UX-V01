@@ -1,5 +1,5 @@
-# CommerceOS — Clean Foundation / Medusa-First Execution Blueprint
-**Status: PLANNING ONLY — implementation and tests NOT yet executed.**  
+# CommerceOS — Agent-Qualified Medusa-First Engineering Blueprint
+**Status: AGENT TRAINING BLUEPRINT ONLY — AG00 NOT_STARTED, AG07 NOT CERTIFIED, F00 LOCKED. No Medusa application is installed.**  
 **Repository:** UI-UX-V01 (reused by explicit owner request)  
 **Reset date:** 2026-10-18  
 **Authoritative language:** Architecture and rules in English; operational handoff also in Arabic.  
@@ -8,11 +8,11 @@
 ## Mission
 Build an actually running, maintainable, secure-by-design, production-operable e-commerce platform on top of the official Medusa v2 app and official bundled Next.js starter. Integrate future modules progressively without modifying Medusa's internals. Do not declare zero vulnerabilities, unlimited capacity, or readiness without evidence.
 
-## Starting points, in strict order
-1. Read [AGENTS.md](AGENTS.md), [START_AGENT_AR.md](START_AGENT_AR.md), [docs/00-MASTER-CHARTER.md](docs/00-MASTER-CHARTER.md).
+## Starting points — AGENT FIRST, then application only after certification
+1. Read [AGENTS.md](AGENTS.md), [.specify/memory/constitution.md](.specify/memory/constitution.md), [START_AGENT_AR.md](START_AGENT_AR.md) and [Agent OS v2](docs/agent-os/README.md).
 2. Read [docs/01-ARCHITECTURE.md](docs/01-ARCHITECTURE.md), [docs/02-SOURCE-OF-TRUTH.md](docs/02-SOURCE-OF-TRUTH.md), [docs/03-MODULE-CATALOG.md](docs/03-MODULE-CATALOG.md).
 3. Read [docs/04-ROADMAP-AND-GATES.md](docs/04-ROADMAP-AND-GATES.md), [docs/05-TEST-STRATEGY.md](docs/05-TEST-STRATEGY.md), [docs/06-SECURITY-BASELINE.md](docs/06-SECURITY-BASELINE.md).
-4. Begin **only F00: verified official starter** from [tasks/F00-BASELINE.md](tasks/F00-BASELINE.md). Stop after producing its evidence and gate result.
+4. Begin ONLY AG00 (agent environment inventory) using [specs/000-agent-readiness/tasks.md](specs/000-agent-readiness/tasks.md), [training gate requirements](docs/agent-os/04-CERTIFICATION-GATES.md) and [live state](docs/agent-os/STATUS.md). F00 implementation explicitly LOCKED until AG07 is human-approved.
 
 ## Non-negotiable rules
 - Prefer existing, documented Medusa modules/providers/workflows; build only real gaps.
@@ -56,3 +56,6 @@ Planning package written; legacy UI/UX prompts removed from main branch via repl
 - tasks/F03-KSA-FOUNDATION.md through tasks/F12-CAPACITY-SECURITY-GO-LIVE.md: later gates, executable only after predecessors pass.
 - .agents/skills/*/SKILL.md: 12 controlled local Antigravity playbooks; see .agents/README.md.
 - docs/19-EXECUTION-PRIMER.md and docs/20-DOMAIN-BOUNDARIES.md and docs/21-COMPATIBILITY-AND-REUSE.md: implementation protocol, complete domain map and known Medusa version traps.
+
+## Agent OS v2: Superpowers + Spec Kit integration (primary workflow)
+The first task is to qualify Antigravity, NOT to build the store. The v2 package includes 20 project-specific local skills under .agents/skills, a nine-competency curriculum, 8 mandatory practical gates AG00-AG07, threat-model and reliability labs, a ratified engineering constitution, a canonical Spec Kit-compatible feature-000 spec/plan/tasks, an installer review guide and structural CI. Official Superpowers (obra/superpowers v7.0.0) and Spec Kit (github/spec-kit v1.2.1) have been studied and integrated at PROCESS level; executable upstream plugins are NOT installed in the user's Antigravity environment yet. AG01 installs and tests them with explicit review. See docs/agent-os/README.md and START_AGENT_AR.md. F00 remains blocked until AG07. 

@@ -1,63 +1,27 @@
-name: Planning documentation integrity (NOT application tests)
+name: Legacy blueprint integrity — documentation only
 on:
   push:
-    branches: [main]
+    branches: [main, "agent-os/**"]
   pull_request:
 jobs:
-  documentation:
+  basic:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Confirm mandatory planning artifacts
+      - name: Confirm original planning artifacts remain
         run: |
           python3 - <<'PY'
           from pathlib import Path
           files = [
-            "README.md", "AGENTS.md", "START_AGENT_AR.md",
-            "docs/00-MASTER-CHARTER.md",
-            "docs/01-ARCHITECTURE.md",
-            "docs/02-SOURCE-OF-TRUTH.md",
-            "docs/03-MODULE-CATALOG.md",
-            "docs/04-ROADMAP-AND-GATES.md",
-            "docs/05-TEST-STRATEGY.md",
-            "docs/06-SECURITY-BASELINE.md",
-            "docs/07-DEPLOYMENT-SRE.md",
-            "docs/08-CONTRACTS-AND-EXTENSIONS.md",
-            "docs/09-SAUDI-LOCALIZATION.md",
-            "docs/10-UI-ADMIN-BUILDER.md",
-            "docs/11-AGENT-OPERATING-SYSTEM.md",
-            "docs/12-REQUIREMENTS-MATRIX.md",
-            "docs/13-RELEASE-AND-RISK.md",
-            "docs/14-OFFICIAL-REFERENCES.md",
-            "docs/15-CHANGE-LOG.md",
-            "docs/16-AGENT-SKILLS.md",
-            "docs/17-PERFORMANCE-QUALITY-BUDGETS.md",
-            "docs/18-DECISIONS-ADR.md",
-            "tasks/F00-BASELINE.md",
-            "tasks/F01-COMMERCE-SMOKE.md",
-            "tasks/F02-CUSTOM-MODULE.md",
-            "docs/19-EXECUTION-PRIMER.md",
-            "docs/20-DOMAIN-BOUNDARIES.md",
-            "docs/21-COMPATIBILITY-AND-REUSE.md",
-            "tasks/F03-KSA-FOUNDATION.md",
-            "tasks/F04-DEPLOY-RELIABILITY.md",
-            "tasks/F05-ADMIN-CMS-BUILDER.md",
-            "tasks/F06-PRODUCT-CUSTOMIZER.md",
-            "tasks/F07-STOREFRONT-DEPTH.md",
-            "tasks/F08-CRM-MARKETING.md",
-            "tasks/F09-OPERATIONS-LOGISTICS.md",
-            "tasks/F10-ANALYTICS-FINANCE.md",
-            "tasks/F11-B2B-POS-AUTOMATION.md",
-            "tasks/F12-CAPACITY-SECURITY-GO-LIVE.md",
-            ".agents/README.md",
+          "README.md", "AGENTS.md", "START_AGENT_AR.md",
+          *[str(p) for p in sorted(Path("docs").glob("[0-2][0-9]-*.md"))],
+          *[str(p) for p in sorted(Path("tasks").glob("F[0-9][0-9]-*.md"))]
           ]
-          skills = sorted(str(p) for p in Path(".agents/skills").glob("*/SKILL.md"))
-          assert len(skills) == 12, f"Expected 12 audited local skills, got: {len(skills)}"
-          files.extend(skills)
-          missing = [p for p in files if not Path(p).is_file() or not Path(p).read_text().strip()]
-          assert not missing, f"Missing or empty: {missing}"
-          print(f"Planning package integrity OK: {len(files)} documents.")
-          print("NOTE: Application build, security, runtime, and performance NOT assessed here.")
+          assert len(files) >= 30, f"insufficient plan files: {len(files)}"
+          bad = [p for p in files if not Path(p).is_file() or not Path(p).read_text().strip()]
+          assert not bad, f"missing or empty: {bad}"
+          print(f"Static CommerceOS plan integrity PASS: {len(files)} files.")
+          print("No application build/security/load test performed.")
           PY
