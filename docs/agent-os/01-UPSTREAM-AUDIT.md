@@ -4,8 +4,8 @@
 1. obra/superpowers is the mature original development methodology with roughly fifteen upstream skill files. Chosen primary. Latest examined release v7.0.0 published 2026-10-10, GitHub main inspected at bb92a77741419a4ab5f06e711a283343f1ada0c3, license MIT. https://github.com/obra/superpowers
 2. chwzr/super-skills is a rebranded fork of obra/superpowers, not a separate authority; do not install a duplicate bootstrap copy.
 3. TaylorChen/super-skills is a different, smaller cross-functional set; may inform research/product skills but NOT our core implementation process.
-4. github/spec-kit is the official SDD toolkit. Examined release v1.2.1 published 2026-10-16; GitHub main inspected at c6a4c18f1d01a8bec241c618eb6dfea952508744; MIT. https://github.com/github/spec-kit
-**Important:** main branch SHA and release tag ref differ; do not equate them. On AG01 verify the actual tag SHA and installed source digest.
+4. github/spec-kit is the official SDD toolkit. Examined release v1.2.1 published 2026-10-16 points to release commit 9dca9bf42a031765ee5e5f2371137f2f26967e11; GitHub main was inspected separately at c6a4c18f1d01a8bec241c618eb6dfea952508744; MIT. https://github.com/github/spec-kit
+**Important:** main branch SHA and release tag ref differ; do not equate them. Release v1.2.1 commit is 9dca9bf42a031765ee5e5f2371137f2f26967e11. On AG01 verify the actual tag SHA and installed source digest.
 
 ## What was read in upstream
 Superpowers skills: using-superpowers, systematic-debugging, test-driven-development, writing-plans, verification-before-completion, dispatching-parallel-agents and Antigravity tool mapping. Key ideas: call relevant process skill before coding; test RED-GREEN-REFACTOR; investigate root cause with reproducible evidence; after 3 speculative fixes escalate; fresh full verification BEFORE claims; parallelize only independent tasks, verify integration.
