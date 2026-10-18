@@ -1,0 +1,47 @@
+name: Planning documentation integrity (NOT application tests)
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Confirm mandatory planning artifacts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files = [
+            "README.md", "AGENTS.md", "START_AGENT_AR.md",
+            *[f"docs/{i:02d}-" for i in []],
+            "docs/00-MASTER-CHARTER.md",
+            "docs/01-ARCHITECTURE.md",
+            "docs/02-SOURCE-OF-TRUTH.md",
+            "docs/03-MODULE-CATALOG.md",
+            "docs/04-ROADMAP-AND-GATES.md",
+            "docs/05-TEST-STRATEGY.md",
+            "docs/06-SECURITY-BASELINE.md",
+            "docs/07-DEPLOYMENT-SRE.md",
+            "docs/08-CONTRACTS-AND-EXTENSIONS.md",
+            "docs/09-SAUDI-LOCALIZATION.md",
+            "docs/10-UI-ADMIN-BUILDER.md",
+            "docs/11-AGENT-OPERATING-SYSTEM.md",
+            "docs/12-REQUIREMENTS-MATRIX.md",
+            "docs/13-RELEASE-AND-RISK.md",
+            "docs/14-OFFICIAL-REFERENCES.md",
+            "docs/15-CHANGE-LOG.md",
+            "docs/16-AGENT-SKILLS.md",
+            "docs/17-PERFORMANCE-QUALITY-BUDGETS.md",
+            "docs/18-DECISIONS-ADR.md",
+            "tasks/F00-BASELINE.md",
+            "tasks/F01-COMMERCE-SMOKE.md",
+            "tasks/F02-CUSTOM-MODULE.md",
+          ]
+          missing = [p for p in files if not Path(p).is_file() or not Path(p).read_text().strip()]
+          assert not missing, f"Missing or empty: {missing}"
+          print(f"Planning package integrity OK: {len(files)} documents.")
+          print("NOTE: Application build, security, runtime, and performance NOT assessed here.")
+          PY
